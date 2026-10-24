@@ -71,11 +71,17 @@
             <div id="statusMsg"></div>
 
             <div class="controls">
-                <div class="d-pad">
-                    <button type="button" class="up" onclick="moveActive(0, -10)">上</button>
-                    <button type="button" class="left" onclick="moveActive(-10, 0)">左</button>
-                    <button type="button" class="right" onclick="moveActive(10, 0)">右</button>
-                    <button type="button" class="down" onclick="moveActive(0, 10)">下</button>
+                <div class="pad-column">
+                    <div class="d-pad">
+                        <button type="button" class="up" onclick="moveActive(0, -10)">↑</button>
+                        <button type="button" class="left" onclick="moveActive(-10, 0)">←</button>
+                        <button type="button" class="down" onclick="moveActive(0, 10)">↓</button>
+                        <button type="button" class="right" onclick="moveActive(10, 0)">→</button>
+                    </div>
+                    <div class="angle-step-row">
+                        <button type="button" onclick="stepAngle(-1)">↶ -1°</button>
+                        <button type="button" onclick="stepAngle(1)">↷ +1°</button>
+                    </div>
                 </div>
                 <div class="sliders-stack">
                     <div class="scale-control" id="scaleBox">
@@ -107,6 +113,7 @@
                 <label class="inline-label">文字色:<input type="color" id="textColor" value="#ffffff" onchange="updateTextLayer()"></label>
                 <label class="inline-label"><input type="checkbox" id="textOutline" checked onchange="updateTextLayer()">フチ:<input type="color" id="outlineColor" value="#000000" onchange="updateTextLayer()"></label>
                 <label class="inline-label"><input type="checkbox" id="textBold" checked onchange="updateTextLayer()">太字</label>
+                <label class="inline-label"><input type="checkbox" id="textVertical" onchange="updateTextLayer()">縦書き</label>
             </div>
 
             <div class="select-row" style="margin-top: 6px;">
@@ -121,11 +128,17 @@
             </div>
 
             <div class="controls">
-                <div class="d-pad">
-                    <button type="button" class="up" onclick="moveActive(0, -10)">上</button>
-                    <button type="button" class="left" onclick="moveActive(-10, 0)">左</button>
-                    <button type="button" class="right" onclick="moveActive(10, 0)">右</button>
-                    <button type="button" class="down" onclick="moveActive(0, 10)">下</button>
+                <div class="pad-column">
+                    <div class="d-pad">
+                        <button type="button" class="up" onclick="moveActive(0, -10)">↑</button>
+                        <button type="button" class="left" onclick="moveActive(-10, 0)">←</button>
+                        <button type="button" class="down" onclick="moveActive(0, 10)">↓</button>
+                        <button type="button" class="right" onclick="moveActive(10, 0)">→</button>
+                    </div>
+                    <div class="angle-step-row">
+                        <button type="button" onclick="stepAngle(-1)">↶ -1°</button>
+                        <button type="button" onclick="stepAngle(1)">↷ +1°</button>
+                    </div>
                 </div>
                 <div class="sliders-stack">
                     <div class="scale-control" id="textSizeBox">
@@ -246,6 +259,20 @@
         draw();
     }
 
+    // 角度を1度ずつ増減させる関数（画像・テキスト共通）
+    function stepAngle(delta) {
+        if (activeTab === 'image') {
+            fgAngle = Math.max(-180, Math.min(180, fgAngle + delta));
+            document.getElementById('fgAngle').value = fgAngle;
+            document.getElementById('angleValue').innerText = fgAngle + '°';
+        } else {
+            textAngle = Math.max(-180, Math.min(180, textAngle + delta));
+            document.getElementById('textAngle').value = textAngle;
+            document.getElementById('textAngleValue').innerText = textAngle + '°';
+        }
+        draw();
+    }
+
     function toggleFlipFg() {
         fgFlipX = !fgFlipX;
         draw();
@@ -278,6 +305,16 @@
         draw();
     }
 
+    // 縦書き時に90度回転させる記号の判定（長音符やカッコ類）
+    function isVerticalRotChar(ch) {
+        return 'ーｰ～〜…‥｜|()（）[]［］{}｛｝「」『』【】〈〉《》〔〕＜＞<>-－＝='.includes(ch);
+    }
+
+    // 縦書き時に右上へ位置補正する小書き文字・句読点の判定
+    function isVerticalSmallOrPunct(ch) {
+        return '、。，．っゃゅょぁぃぅぇぉッャュョァィゥェォヵヶ'.includes(ch);
+    }
+
     // 描画処理（背景 ＋ 重ねる画像 ＋ テキストボックス）
     function draw() {
         canvas.width = customWidth;
@@ -299,7 +336,7 @@
             }
         }
         
-        // 2. 重ねる画像の描画（画像の中心 fgX, fgY を軸に回転・反転・拡縮）
+        // 2. 重ねる画像の描画
         if (fgImage) {
             const w = fgImage.width * fgScale;
             const h = fgImage.height * fgScale;
@@ -313,12 +350,13 @@
             ctx.restore();
         }
 
-        // 3. テキストボックスの描画（テキストの中心 textX, textY を軸に回転）
+        // 3. テキストボックスの描画（横書き・縦書き対応）
         const rawText = document.getElementById('overlayText').value;
         if (rawText && rawText.trim().length > 0) {
             const lines = rawText.split('\n');
             const fontSize = parseInt(document.getElementById('textSize').value) || 40;
             const isBold = document.getElementById('textBold').checked;
+            const isVertical = document.getElementById('textVertical').checked;
             const textColor = document.getElementById('textColor').value;
             const hasOutline = document.getElementById('textOutline').checked;
             const outlineColor = document.getElementById('outlineColor').value;
@@ -332,37 +370,95 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            const lineHeight = fontSize * 1.25;
-            const totalHeight = lines.length * lineHeight;
+            const strokeW = Math.max(2, Math.round(fontSize * 0.12));
 
-            // 背景ボックスの描画
-            if (boxBg !== 'none') {
-                let maxLineWidth = 0;
+            if (!isVertical) {
+                // --- 横書き描画 ---
+                const lineHeight = fontSize * 1.25;
+                const totalHeight = lines.length * lineHeight;
+
+                if (boxBg !== 'none') {
+                    let maxLineWidth = 0;
+                    for (const line of lines) {
+                        const m = ctx.measureText(line);
+                        if (m.width > maxLineWidth) maxLineWidth = m.width;
+                    }
+                    const padX = fontSize * 0.4;
+                    const padY = fontSize * 0.25;
+                    const boxW = maxLineWidth + padX * 2;
+                    const boxH = totalHeight + padY * 2;
+
+                    ctx.fillStyle = boxBg;
+                    ctx.fillRect(-boxW / 2, -boxH / 2, boxW, boxH);
+                }
+
+                const startY = -(totalHeight / 2) + (lineHeight / 2);
+                for (let i = 0; i < lines.length; i++) {
+                    const ly = startY + i * lineHeight;
+                    if (hasOutline) {
+                        ctx.strokeStyle = outlineColor;
+                        ctx.lineWidth = strokeW;
+                        ctx.lineJoin = 'round';
+                        ctx.strokeText(lines[i], 0, ly);
+                    }
+                    ctx.fillStyle = textColor;
+                    ctx.fillText(lines[i], 0, ly);
+                }
+            } else {
+                // --- 縦書き描画（右から左へ改行展開） ---
+                const charStepY = fontSize * 1.08;
+                const colStepX = fontSize * 1.35;
+                const numCols = lines.length;
+                let maxChars = 0;
                 for (const line of lines) {
-                    const m = ctx.measureText(line);
-                    if (m.width > maxLineWidth) maxLineWidth = m.width;
+                    const chars = Array.from(line);
+                    if (chars.length > maxChars) maxChars = chars.length;
                 }
-                const padX = fontSize * 0.4;
-                const padY = fontSize * 0.25;
-                const boxW = maxLineWidth + padX * 2;
-                const boxH = totalHeight + padY * 2;
 
-                ctx.fillStyle = boxBg;
-                ctx.fillRect(-boxW / 2, -boxH / 2, boxW, boxH);
-            }
+                const totalWidth = numCols * colStepX;
+                const totalHeight = maxChars * charStepY;
 
-            // 各行の文字描画
-            const startY = -(totalHeight / 2) + (lineHeight / 2);
-            for (let i = 0; i < lines.length; i++) {
-                const ly = startY + i * lineHeight;
-                if (hasOutline) {
-                    ctx.strokeStyle = outlineColor;
-                    ctx.lineWidth = Math.max(2, Math.round(fontSize * 0.12));
-                    ctx.lineJoin = 'round';
-                    ctx.strokeText(lines[i], 0, ly);
+                if (boxBg !== 'none') {
+                    const padX = fontSize * 0.35;
+                    const padY = fontSize * 0.35;
+                    const boxW = totalWidth + padX * 2;
+                    const boxH = totalHeight + padY * 2;
+
+                    ctx.fillStyle = boxBg;
+                    ctx.fillRect(-boxW / 2, -boxH / 2, boxW, boxH);
                 }
-                ctx.fillStyle = textColor;
-                ctx.fillText(lines[i], 0, ly);
+
+                // 1行目は一番右の列、改行ごとに左の列へ進む
+                const startX = (totalWidth / 2) - (colStepX / 2);
+                const startY = -(totalHeight / 2) + (charStepY / 2);
+
+                for (let c = 0; c < numCols; c++) {
+                    const colX = startX - c * colStepX;
+                    const chars = Array.from(lines[c]);
+                    for (let r = 0; r < chars.length; r++) {
+                        const ch = chars[r];
+                        const charY = startY + r * charStepY;
+
+                        ctx.save();
+                        ctx.translate(colX, charY);
+
+                        if (isVerticalRotChar(ch)) {
+                            ctx.rotate(Math.PI / 2);
+                        } else if (isVerticalSmallOrPunct(ch)) {
+                            ctx.translate(fontSize * 0.22, -fontSize * 0.22);
+                        }
+
+                        if (hasOutline) {
+                            ctx.strokeStyle = outlineColor;
+                            ctx.lineWidth = strokeW;
+                            ctx.lineJoin = 'round';
+                            ctx.strokeText(ch, 0, 0);
+                        }
+                        ctx.fillStyle = textColor;
+                        ctx.fillText(ch, 0, 0);
+                        ctx.restore();
+                    }
+                }
             }
             ctx.restore();
         }
@@ -434,7 +530,6 @@
         document.getElementById('angleValue').innerText = '0°';
         fgFlipX = false;
 
-        // キャンバスの中央に配置
         fgX = customWidth / 2;
         fgY = customHeight / 2;
         
