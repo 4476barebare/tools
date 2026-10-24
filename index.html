@@ -3,64 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>画像合成ツール</title>
+    <title>画像重ね合わせツール</title>
     <style>
-        body { font-family: sans-serif; padding: 15px; background: #f5f5f5; margin: 0; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h1 { font-size: 1.4em; margin-top: 0; margin-bottom: 15px; }
-        .step { margin-bottom: 15px; padding: 12px; background: #eef7ff; border-radius: 6px; }
+        * { box-sizing: border-box; }
+        body { font-family: sans-serif; padding: 10px; background: #f5f5f5; margin: 0; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 14px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.2em; margin-top: 0; margin-bottom: 12px; text-align: center; }
         
-        .input-group { margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-        .input-group label { font-weight: bold; font-size: 0.95em; }
-        .input-group input[type="number"], .input-group select { padding: 6px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
-        .btn-small { padding: 6px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        /* 3つのメインセクション */
+        .section-box { margin-bottom: 12px; padding: 12px; background: #eef7ff; border-radius: 6px; }
+        .section-footer { margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; }
 
-        /* ペースト専用テキストエリア（iOSで最も安定してペーストできる方式） */
+        /* 横一列レイアウト用の共通行クラス */
+        .row-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+             gap: 6px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+        .row-line:last-child { margin-bottom: 0; }
+
+        /* スマホUIに合わせた小さめ見出し・ラベル */
+        .sec-title { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
+        .inline-label { font-size: 0.8rem; font-weight: bold; white-space: nowrap; display: flex; align-items: center; gap: 3px; }
+
+        /* コンパクトなファイル選択ボタン（標準の「ファイル未選択」を隠して横一列に収める） */
+        .file-btn-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 10px;
+            background: #fff;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .file-btn-label:active { background: #e9ecef; }
+        .file-btn-label input[type="file"] { display: none; }
+        .file-status { font-size: 0.72rem; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px; }
+
+        /* 幅・高さ・サイズ適用ボタンの横一列調整 */
+        .size-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            width: 100%;
+            flex-wrap: nowrap;
+        }
+        .size-row input[type="number"] {
+            width: 62px;
+            padding: 5px 4px;
+            font-size: 0.85rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: right;
+        }
+        .btn-small {
+            margin-left: auto;
+            padding: 6px 10px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-small:active { background: #5a6268; }
+
+        /* 背景の配置セレクトボックス（はみ出し防止） */
+        .select-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+        .select-row select {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+            padding: 6px;
+            font-size: 0.82rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        /* ペースト専用エリア */
         #pasteInputArea {
             margin-top: 8px;
             width: 100%;
-            min-height: 60px;
+            min-height: 52px;
             border: 2px dashed #007bff;
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #007bff;
             background: #ffffff;
             font-weight: bold;
-            font-size: 1em;
+            font-size: 0.85rem;
             cursor: text;
-            box-sizing: border-box;
             outline: none;
             text-align: center;
-            padding: 8px;
+            padding: 6px;
         }
-        #pasteInputArea:focus {
-            background: #e8f4ff;
-            border-style: solid;
-        }
+        #pasteInputArea:focus { background: #e8f4ff; border-style: solid; }
 
         #statusMsg {
             margin-top: 6px;
-            font-size: 0.85em;
+            font-size: 0.78rem;
             font-weight: bold;
             color: #0056b3;
         }
 
-        /* コントロール・ボタン類 */
-        .controls { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
-        .d-pad { display: grid; grid-template-columns: 42px 42px 42px; gap: 4px; text-align: center; }
-        .d-pad button { padding: 10px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px; font-weight: bold; font-size: 1em; }
+        /* 十字キーと縮尺スライダー */
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #dbe9f6;
+        }
+        .d-pad { display: grid; grid-template-columns: 36px 36px 36px; gap: 3px; text-align: center; flex-shrink: 0; }
+        .d-pad button { padding: 7px 0; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px; font-weight: bold; font-size: 0.82rem; }
         .d-pad button:active { background: #eee; }
         .d-pad .up { grid-column: 2; }
         .d-pad .left { grid-column: 1; }
         .d-pad .right { grid-column: 3; }
         .d-pad .down { grid-column: 2; grid-row: 2; }
         
-        .scale-control { background: #fff3cd; padding: 10px; border-radius: 6px; flex-grow: 1; border: 1px solid #ffeeba; }
-        .scale-control input[type="range"] { width: 100%; margin-top: 6px; }
+        .scale-control { background: #fff3cd; padding: 8px; border-radius: 6px; flex: 1; min-width: 0; border: 1px solid #ffeeba; font-size: 0.82rem; }
+        .scale-control input[type="range"] { width: 100%; margin-top: 4px; }
 
         /* キャンバス表示部 */
+        .guide-text { font-size: 0.75rem; color: #666; margin: 0 0 6px 0; }
         canvas { 
             border: 1px solid #999; 
             max-width: 100%; 
@@ -68,16 +155,17 @@
             touch-action: none;
             cursor: move;
             display: block;
+            margin: 0 auto;
             background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
         }
         
-        .btn-flatten { background: #17a2b8; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 1.05em; font-weight: bold; width: 100%; margin-top: 15px;}
-        .btn-flatten:hover { background: #138496; }
-        .btn-save { background: #28a745; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 1.05em; font-weight: bold; width: 100%; margin-top: 10px;}
-        .btn-save:hover { background: #218838; }
-        .guide-text { font-size: 0.85em; color: #555; margin: 4px 0 8px 0; }
+        /* 保存・結合ボタン */
+        .btn-flatten { background: #17a2b8; color: white; border: none; padding: 11px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: bold; width: 100%; margin-top: 10px;}
+        .btn-flatten:active { background: #138496; }
+        .btn-save { background: #28a745; color: white; border: none; padding: 11px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: bold; width: 100%; margin-top: 8px;}
+        .btn-save:active { background: #218838; }
     </style>
 </head>
 <body>
@@ -85,55 +173,78 @@
 <div class="container">
     <h1>画像重ね合わせツール</h1>
     
-    <div class="step">
-        <strong>1. 背景キャンバスの設定:</strong>
-        <div class="input-group" style="margin-top: 6px;">
-            <label>幅: <input type="number" id="canvasW" value="800" style="width: 75px;"> px</label>
-            <label>高さ: <input type="number" id="canvasH" value="600" style="width: 75px;"> px</label>
+    <!-- ① 背景キャンバスの設定 -->
+    <div class="section-box">
+        <!-- 1行目: タイトルとファイル選択ボタンを横一列 -->
+        <div class="row-line">
+            <span class="sec-title">1. 背景キャンバスの設定</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+                <span id="bgFileName" class="file-status">未選択</span>
+                <label class="file-btn-label">
+                    ファイルを選択
+                    <input type="file" id="bgInput" accept="image/*">
+                </label>
+            </div>
+        </div>
+
+        <!-- 2行目: 幅・高さ・サイズ適用ボタンを横一列 -->
+        <div class="size-row">
+            <label class="inline-label">幅:<input type="number" id="canvasW" value="800">px</label>
+            <label class="inline-label">高さ:<input type="number" id="canvasH" value="600">px</label>
             <button class="btn-small" onclick="updateCanvasSize()">サイズ適用</button>
         </div>
-        <div class="input-group">
-            <label>背景の配置: 
-                <select id="bgMode" onchange="draw()">
-                    <option value="stretch">引き伸ばす（縦横比を無視）</option>
-                    <option value="cover">はみ出しをカット（縦横比を維持して全面表示）</option>
-                    <option value="contain">余白を透明に補完（縦横比を維持して全体表示）</option>
-                </select>
-            </label>
+
+        <!-- 3行目: 背景の配置（横幅に合わせて収める） -->
+        <div class="select-row">
+            <span class="inline-label">背景の配置:</span>
+            <select id="bgMode" onchange="draw()">
+                <option value="stretch">引き伸ばす（縦横比を無視）</option>
+                <option value="cover">はみ出しをカット（縦横比維持・全面）</option>
+                <option value="contain">余白を透明に補完（縦横比維持・全体）</option>
+            </select>
         </div>
-        <input type="file" id="bgInput" accept="image/*">
     </div>
     
-    <div class="step">
-        <strong>2. 重ねる画像を追加:</strong>
+    <!-- ② 重ねる画像を追加・調整 -->
+    <div class="section-box">
+        <div class="row-line">
+            <span class="sec-title">2. 重ねる画像を追加</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+                <span id="fgFileName" class="file-status">未選択</span>
+                <label class="file-btn-label">
+                    ファイルを選択
+                    <input type="file" id="fgInput" accept="image/*">
+                </label>
+            </div>
+        </div>
+
         <div id="pasteInputArea" contenteditable="true">
-            <span style="pointer-events: none;">👆 ここをタップして長押し →「ペースト」</span>
+            <span style="pointer-events: none;">👆 タップして長押し →「ペースト」</span>
         </div>
         <div id="statusMsg"></div>
-        <div style="margin-top: 6px;">
-            <small style="color:#666;">またはファイルから選択: </small>
-            <input type="file" id="fgInput" accept="image/*">
+
+        <div class="controls">
+            <div class="d-pad">
+                <button class="up" onclick="moveFg(0, -10)">上</button>
+                <button class="left" onclick="moveFg(-10, 0)">左</button>
+                <button class="right" onclick="moveFg(10, 0)">右</button>
+                <button class="down" onclick="moveFg(0, 10)">下</button>
+            </div>
+            <div class="scale-control">
+                <strong>画像の縮尺: <span id="scaleValue">100%</span></strong>
+                <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
+            </div>
         </div>
     </div>
 
-    <div class="controls">
-        <div class="d-pad">
-            <button class="up" onclick="moveFg(0, -10)">上</button>
-            <button class="left" onclick="moveFg(-10, 0)">左</button>
-            <button class="right" onclick="moveFg(10, 0)">右</button>
-            <button class="down" onclick="moveFg(0, 10)">下</button>
-        </div>
-        <div class="scale-control">
-            <strong>重ねる画像の縮尺: <span id="scaleValue">100%</span></strong>
-            <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
-        </div>
+    <!-- ③ キャンバス表示 ＆ 新しい背景に設定・保存ボタン -->
+    <div class="section-footer">
+        <p class="guide-text">※キャンバス上のドラッグ／スワイプでも移動できます。</p>
+        <canvas id="canvas"></canvas>
+
+        <button class="btn-flatten" onclick="setAsNewBackground()">現在の状態を新しい背景に設定する（結合）</button>
+        <button class="btn-save" onclick="saveImage()">合成画像を保存する</button>
     </div>
-
-    <p class="guide-text">※キャンバス上のドラッグ／スワイプでも自由に移動できます。</p>
-    <canvas id="canvas"></canvas>
-
-    <button class="btn-flatten" onclick="setAsNewBackground()">現在の状態を新しい背景に設定する（画像の結合）</button>
-    <button class="btn-save" onclick="saveImage()">合成画像を保存する</button>
 </div>
 
 <script>
@@ -141,10 +252,10 @@
     const ctx = canvas.getContext('2d');
     const pasteInputArea = document.getElementById('pasteInputArea');
     const statusMsg = document.getElementById('statusMsg');
-    const defaultPlaceholder = '<span style="pointer-events: none;">👆 ここをタップして長押し →「ペースト」</span>';
+    const defaultPlaceholder = '<span style="pointer-events: none;">👆 タップして長押し →「ペースト」</span>';
     
     let bgImage = null;
-    let fgImage = null; // ここに余白カット済みのCanvasを直接入れる（変換待ちバグを防止）
+    let fgImage = null;
     
     let customWidth = 800;
     let customHeight = 600;
@@ -198,7 +309,6 @@
         fgX += dx; fgY += dy; draw();
     }
 
-    // 【重要】透明な余白をカットし、new Image() を経由せず直接 Canvas を返す（100%確実に即座に描画可能）
     function trimAndCheckTransparency(img) {
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
@@ -242,7 +352,6 @@
         return { canvas: outCanvas, isCutout: hasTransparentPixel };
     }
 
-    // 切り抜き済みのCanvasを前景にセットして即座に描画
     function setForegroundResult(result) {
         fgImage = result.canvas;
         document.getElementById('fgScale').value = 1.0;
@@ -253,10 +362,10 @@
         
         if (result.isCutout) {
             statusMsg.style.color = "#28a745";
-            statusMsg.innerText = `✅ 切り抜き画像（透過あり）を配置しました！ (${fgImage.width}×${fgImage.height}px)`;
+            statusMsg.innerText = `✅ 切り抜き画像（透過あり）を配置しました (${fgImage.width}×${fgImage.height}px)`;
         } else {
             statusMsg.style.color = "#d9534f";
-            statusMsg.innerText = `⚠️ 透過のない元画像が貼られました。写真アプリで対象を長押しし、光った後に「指を離して」出るコピーを押してください。`;
+            statusMsg.innerText = `⚠️ 透過のない画像が貼られました（切り抜きコピーは光った後に指を離してコピー）`;
         }
         draw();
     }
@@ -268,7 +377,6 @@
         }, 80);
     }
 
-    // ファイルを読み込んでImageオブジェクトにする関数
     function fileToImage(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -283,12 +391,10 @@
         });
     }
 
-    // 【修正版】一度成功したときのペースト処理をそのまま活かし、複数データがある場合は透過がある方を確実に選ぶ
     pasteInputArea.addEventListener('paste', async function(e) {
         const cd = e.clipboardData;
         if (!cd) return;
 
-        // 1. HTML内に <img> タグが埋め込まれているかチェック
         const htmlText = cd.getData('text/html');
         let htmlImgSrc = null;
         if (htmlText && htmlText.indexOf('<img') !== -1) {
@@ -297,7 +403,6 @@
             if (imgTag && imgTag.src) htmlImgSrc = imgTag.src;
         }
 
-        // 2. items と files からすべての画像ファイルを収集（image/png を最優先で先頭にする）
         const files = [];
         if (cd.items) {
             for (let i = 0; i < cd.items.length; i++) {
@@ -315,16 +420,15 @@
             }
         }
 
-        // PNGを先頭にソート
         files.sort((a, b) => (b.type === 'image/png' ? 1 : 0) - (a.type === 'image/png' ? 1 : 0));
 
         if (files.length > 0 || htmlImgSrc) {
             e.preventDefault();
             resetPasteArea();
+            document.getElementById('fgFileName').innerText = "ペースト済";
 
             let fallbackResult = null;
 
-            // ファイル群を順番に検査し、透明ピクセル（切り抜き）があるものを即採用
             for (const f of files) {
                 const img = await fileToImage(f);
                 if (!img) continue;
@@ -336,7 +440,6 @@
                 if (!fallbackResult) fallbackResult = res;
             }
 
-            // HTMLのimgタグも検査
             if (htmlImgSrc) {
                 const img = await new Promise((resolve) => {
                     const i = new Image();
@@ -354,19 +457,18 @@
                 }
             }
 
-            // どれも透明でなかった場合は最初の画像を配置
             if (fallbackResult) {
                 setForegroundResult(fallbackResult);
             }
             return;
         }
 
-        // 3. 枠内に直接ペーストされた場合のフォールバック
         setTimeout(() => {
             const pastedImg = pasteInputArea.querySelector('img');
             if (pastedImg && pastedImg.src) {
                 const img = new Image();
                 img.onload = () => {
+                    document.getElementById('fgFileName').innerText = "ペースト済";
                     const res = trimAndCheckTransparency(img);
                     setForegroundResult(res);
                 };
@@ -380,6 +482,7 @@
     document.getElementById('fgInput').addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (!file) return;
+        document.getElementById('fgFileName').innerText = file.name;
         const img = await fileToImage(file);
         if (img) {
             const res = trimAndCheckTransparency(img);
@@ -391,6 +494,7 @@
     document.getElementById('bgInput').addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (!file) return;
+        document.getElementById('bgFileName').innerText = file.name;
         const img = await fileToImage(file);
         if (img) {
             bgImage = img;
@@ -453,6 +557,8 @@
             bgImage = img;
             fgImage = null;
             document.getElementById('fgInput').value = "";
+            document.getElementById('fgFileName').innerText = "未選択";
+            document.getElementById('bgFileName').innerText = "結合画像";
             statusMsg.style.color = "#0056b3";
             statusMsg.innerText = "背景に結合しました。続けて次の画像をペーストできます。";
             draw();
