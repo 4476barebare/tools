@@ -284,7 +284,7 @@ h1 {
     flex: 1;
     min-width: 0;
     padding: 6px 8px;
-    font-size: 16px; /* iOSの自動ズーム防止 */
+    font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
     resize: none;
@@ -333,7 +333,7 @@ h1 {
     margin: 0;
 }
 
-/* 十字キーとスライダー */
+/* 十字キーと2段スライダー（縮尺・角度） */
 .controls {
     display: flex;
     gap: 10px;
@@ -371,21 +371,50 @@ h1 {
 .d-pad .right { grid-column: 3; }
 .d-pad .down { grid-column: 2; grid-row: 2; }
 
-.scale-control {
-    background: #fff3cd;
-    padding: 8px 10px;
-    border-radius: 6px;
+.sliders-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     flex: 1;
     min-width: 0;
+}
+
+.scale-control {
+    background: #fff3cd;
+    padding: 6px 10px;
+    border-radius: 6px;
     border: 1px solid #ffeeba;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     touch-action: none;
+}
+
+.slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.btn-mini {
+    padding: 2px 6px;
+    font-size: 0.68rem;
+    font-weight: bold;
+    background: #fff;
+    border: 1px solid #d39e00;
+    color: #856404;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-mini:active {
+    background: #ffeeba;
 }
 
 .scale-control input[type="range"] {
     width: 100%;
-    height: 28px;
-    margin: 4px 0 0 0;
+    height: 24px;
+    margin: 2px 0 0 0;
     touch-action: none;
     cursor: pointer;
 }
