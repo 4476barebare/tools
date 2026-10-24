@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>画像重ね合わせツール</title>
+    <title>画像合成ツール</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
 <div class="container">
     <h1>画像重ね合わせツール</h1>
     
-    <!-- ① 背景キャンバスの設定 -->
+    <!-- ① 背景キャンバスの設定（常時表示） -->
     <div class="section-box">
         <div class="header-line">
             <span class="sec-title">1. 背景キャンバスの設定</span>
@@ -40,48 +40,92 @@
         </div>
     </div>
     
-    <!-- ② 重ねる画像を追加・調整 -->
-    <div class="section-box">
-        <div class="header-line">
-            <span class="sec-title">2. 重ねる画像を追加</span>
-            <div class="file-action-area">
-                <span id="fgFileName" class="file-status">未選択</span>
-                <label class="file-btn-label">
-                    ファイルを選択
-                    <input type="file" id="fgInput" accept="image/*">
-                </label>
+    <!-- ② 重ねる要素の編集（タブ切り替えエリア） -->
+    <div class="tab-wrapper">
+        <div class="tab-header">
+            <button type="button" class="tab-btn active" id="tabBtnImage" onclick="switchTab('image')">🖼️ 2. 画像を重ねる</button>
+            <button type="button" class="tab-btn" id="tabBtnText" onclick="switchTab('text')">🔤 2. テキストを重ねる</button>
+        </div>
+
+        <!-- タブA: 画像を重ねる -->
+        <div class="section-box tab-content" id="tabImage">
+            <div class="header-line">
+                <span class="sec-title">重ねる画像の読み込み</span>
+                <div class="file-action-area">
+                    <span id="fgFileName" class="file-status">未選択</span>
+                    <label class="file-btn-label">
+                        ファイルを選択
+                        <input type="file" id="fgInput" accept="image/*">
+                    </label>
+                </div>
+            </div>
+
+            <button type="button" class="btn-paste" id="pasteBtn" onclick="handleButtonPaste()">
+                📋 クリップボードからペースト
+            </button>
+
+            <div id="fallbackPasteArea" contenteditable="true" style="display: none;">
+                <span style="pointer-events: none;">👆 ここを長押しして「ペースト」を選択</span>
+            </div>
+
+            <div id="statusMsg"></div>
+
+            <div class="controls">
+                <div class="d-pad">
+                    <button type="button" class="up" onclick="moveActive(0, -10)">上</button>
+                    <button type="button" class="left" onclick="moveActive(-10, 0)">左</button>
+                    <button type="button" class="right" onclick="moveActive(10, 0)">右</button>
+                    <button type="button" class="down" onclick="moveActive(0, 10)">下</button>
+                </div>
+                <div class="scale-control" id="scaleBox">
+                    <strong>画像の縮尺: <span id="scaleValue">100%</span></strong>
+                    <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
+                </div>
             </div>
         </div>
 
-        <!-- 普通のボタンでペーストを実行 -->
-        <button type="button" class="btn-paste" id="pasteBtn" onclick="handleButtonPaste()">
-            📋 クリップボードからペースト
-        </button>
-
-        <!-- 万が一ボタンAPIが拒否された時だけ現れる予備エリア（普段は非表示） -->
-        <div id="fallbackPasteArea" contenteditable="true" style="display: none;">
-            <span style="pointer-events: none;">👆 ここを長押しして「ペースト」を選択</span>
-        </div>
-
-        <div id="statusMsg"></div>
-
-        <div class="controls">
-            <div class="d-pad">
-                <button class="up" onclick="moveFg(0, -10)">上</button>
-                <button class="left" onclick="moveFg(-10, 0)">左</button>
-                <button class="right" onclick="moveFg(10, 0)">右</button>
-                <button class="down" onclick="moveFg(0, 10)">下</button>
+        <!-- タブB: テキストを重ねる -->
+        <div class="section-box tab-content" id="tabText" style="display: none;">
+            <div class="text-input-row">
+                <textarea id="overlayText" rows="2" placeholder="ここに入力した文字がキャンバスに重なります（改行対応）" oninput="updateTextLayer()"></textarea>
+                <button type="button" class="btn-clear-text" onclick="clearTextLayer()">消去</button>
             </div>
-            <div class="scale-control" id="scaleBox">
-                <strong>画像の縮尺: <span id="scaleValue">100%</span></strong>
-                <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
+
+            <div class="text-style-row">
+                <label class="inline-label">文字色:<input type="color" id="textColor" value="#ffffff" onchange="updateTextLayer()"></label>
+                <label class="inline-label"><input type="checkbox" id="textOutline" checked onchange="updateTextLayer()">フチ:<input type="color" id="outlineColor" value="#000000" onchange="updateTextLayer()"></label>
+                <label class="inline-label"><input type="checkbox" id="textBold" checked onchange="updateTextLayer()">太字</label>
+            </div>
+
+            <div class="select-row" style="margin-top: 6px;">
+                <span class="inline-label">背景枠:</span>
+                <select id="textBoxBg" onchange="updateTextLayer()">
+                    <option value="none">なし（透明）</option>
+                    <option value="rgba(0,0,0,0.6)">半透明の黒ボックス</option>
+                    <option value="rgba(255,255,255,0.75)">半透明の白ボックス</option>
+                    <option value="#000000">黒塗りボックス</option>
+                    <option value="#ffffff">白塗りボックス</option>
+                </select>
+            </div>
+
+            <div class="controls">
+                <div class="d-pad">
+                    <button type="button" class="up" onclick="moveActive(0, -10)">上</button>
+                    <button type="button" class="left" onclick="moveActive(-10, 0)">左</button>
+                    <button type="button" class="right" onclick="moveActive(10, 0)">右</button>
+                    <button type="button" class="down" onclick="moveActive(0, 10)">下</button>
+                </div>
+                <div class="scale-control" id="textSizeBox">
+                    <strong>文字サイズ: <span id="textSizeValue">40px</span></strong>
+                    <input type="range" id="textSize" min="12" max="160" step="2" value="40" oninput="updateTextLayer()">
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ③ キャンバス表示 ＆ 新しい背景に設定・保存ボタン -->
+    <!-- ③ キャンバス表示 ＆ 新しい背景に設定・保存ボタン（常時表示） -->
     <div class="section-footer">
-        <p class="guide-text">※キャンバス上のドラッグ／スワイプでも移動できます。</p>
+        <p class="guide-text" id="dragGuideText">※キャンバス上のドラッグ／スワイプで「重ねた画像」を移動できます。</p>
         <canvas id="canvas"></canvas>
 
         <button class="btn-flatten" onclick="setAsNewBackground()">現在の状態を新しい背景に設定する（結合）</button>
@@ -96,13 +140,19 @@
     const statusMsg = document.getElementById('statusMsg');
     const defaultFallbackText = '<span style="pointer-events: none;">👆 ここを長押しして「ペースト」を選択</span>';
     
+    let activeTab = 'image'; // 'image' または 'text'
+
+    // 背景と画像レイヤーの変数
     let bgImage = null;
     let fgImage = null;
-    
     let customWidth = 800;
     let customHeight = 600;
     let fgX = 0, fgY = 0;
     let fgScale = 1.0;
+
+    // テキストレイヤーの変数
+    let textX = 400, textY = 300;
+    let isTextInitialized = false;
 
     let isDragging = false;
     let startX, startY;
@@ -110,14 +160,44 @@
     updateCanvasSize();
 
     // スライダー操作時の画面ブレ防止
-    const scaleBox = document.getElementById('scaleBox');
-    scaleBox.addEventListener('touchmove', function(e) {
-        e.stopPropagation();
-    }, { passive: false });
+    ['scaleBox', 'textSizeBox'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('touchmove', function(e) {
+                e.stopPropagation();
+            }, { passive: false });
+        }
+    });
+
+    // タブ切り替え処理
+    function switchTab(tabName) {
+        activeTab = tabName;
+        document.getElementById('tabBtnImage').classList.toggle('active', tabName === 'image');
+        document.getElementById('tabBtnText').classList.toggle('active', tabName === 'text');
+        document.getElementById('tabImage').style.display = (tabName === 'image') ? 'block' : 'none';
+        document.getElementById('tabText').style.display = (tabName === 'text') ? 'block' : 'none';
+
+        const guide = document.getElementById('dragGuideText');
+        if (tabName === 'image') {
+            guide.innerText = '※キャンバス上のドラッグ／スワイプで「重ねた画像」を移動できます。';
+        } else {
+            guide.innerText = '※キャンバス上のドラッグ／スワイプで「テキスト」を移動できます。';
+            if (!isTextInitialized) {
+                textX = customWidth / 2;
+                textY = customHeight / 2;
+                isTextInitialized = true;
+            }
+        }
+        draw();
+    }
 
     function updateCanvasSize() {
         customWidth = parseInt(document.getElementById('canvasW').value) || 800;
         customHeight = parseInt(document.getElementById('canvasH').value) || 600;
+        if (!isTextInitialized) {
+            textX = customWidth / 2;
+            textY = customHeight / 2;
+        }
         draw();
     }
 
@@ -127,11 +207,29 @@
         draw();
     }
 
+    function updateTextLayer() {
+        const size = document.getElementById('textSize').value;
+        document.getElementById('textSizeValue').innerText = size + 'px';
+        if (!isTextInitialized) {
+            textX = customWidth / 2;
+            textY = customHeight / 2;
+            isTextInitialized = true;
+        }
+        draw();
+    }
+
+    function clearTextLayer() {
+        document.getElementById('overlayText').value = '';
+        draw();
+    }
+
+    // 描画処理（背景 ＋ 重ねる画像 ＋ テキストボックス）
     function draw() {
         canvas.width = customWidth;
         canvas.height = customHeight;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
+        // 1. 背景画像の描画
         if (bgImage) {
             const mode = document.getElementById('bgMode').value;
             if (mode === 'stretch') {
@@ -146,18 +244,77 @@
             }
         }
         
+        // 2. 重ねる画像の描画
         if (fgImage) {
             const w = fgImage.width * fgScale;
             const h = fgImage.height * fgScale;
             ctx.drawImage(fgImage, fgX, fgY, w, h);
         }
+
+        // 3. テキストボックスの描画
+        const rawText = document.getElementById('overlayText').value;
+        if (rawText && rawText.trim().length > 0) {
+            const lines = rawText.split('\n');
+            const fontSize = parseInt(document.getElementById('textSize').value) || 40;
+            const isBold = document.getElementById('textBold').checked;
+            const textColor = document.getElementById('textColor').value;
+            const hasOutline = document.getElementById('textOutline').checked;
+            const outlineColor = document.getElementById('outlineColor').value;
+            const boxBg = document.getElementById('textBoxBg').value;
+
+            ctx.save();
+            ctx.font = `${isBold ? 'bold ' : ''}${fontSize}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const lineHeight = fontSize * 1.25;
+            const totalHeight = lines.length * lineHeight;
+
+            // 背景ボックスの描画
+            if (boxBg !== 'none') {
+                let maxLineWidth = 0;
+                for (const line of lines) {
+                    const m = ctx.measureText(line);
+                    if (m.width > maxLineWidth) maxLineWidth = m.width;
+                }
+                const padX = fontSize * 0.4;
+                const padY = fontSize * 0.25;
+                const boxW = maxLineWidth + padX * 2;
+                const boxH = totalHeight + padY * 2;
+
+                ctx.fillStyle = boxBg;
+                ctx.fillRect(textX - boxW / 2, textY - boxH / 2, boxW, boxH);
+            }
+
+            // 各行の文字描画
+            const startY = textY - (totalHeight / 2) + (lineHeight / 2);
+            for (let i = 0; i < lines.length; i++) {
+                const ly = startY + i * lineHeight;
+                if (hasOutline) {
+                    ctx.strokeStyle = outlineColor;
+                    ctx.lineWidth = Math.max(2, Math.round(fontSize * 0.12));
+                    ctx.lineJoin = 'round';
+                    ctx.strokeText(lines[i], textX, ly);
+                }
+                ctx.fillStyle = textColor;
+                ctx.fillText(lines[i], textX, ly);
+            }
+            ctx.restore();
+        }
     }
 
-    function moveFg(dx, dy) {
-        fgX += dx; fgY += dy; draw();
+    // 十字キーでの移動（開いているタブの対象を動かす）
+    function moveActive(dx, dy) {
+        if (activeTab === 'image') {
+            fgX += dx;
+            fgY += dy;
+        } else {
+            textX += dx;
+            textY += dy;
+        }
+        draw();
     }
 
-    // 透明な余白をカットし、Canvasを直接返す（タイミングバグゼロ）
     function trimAndCheckTransparency(img) {
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
@@ -236,7 +393,6 @@
         });
     }
 
-    // 【メイン機能】普通のボタン1回タップでクリップボードから透過画像を読み取る
     async function handleButtonPaste() {
         statusMsg.style.color = "#0056b3";
         statusMsg.innerText = "⏳ クリップボードを読み取り中...";
@@ -250,7 +406,6 @@
             let fallbackRes = null;
 
             for (const item of items) {
-                // 1. image/png があれば最優先で検査
                 if (item.types.includes('image/png')) {
                     const blob = await item.getType('image/png');
                     const img = await blobToImage(blob);
@@ -264,7 +419,6 @@
                     }
                 }
 
-                // 2. text/html の中に <img> タグがある場合も検査
                 if (item.types.includes('text/html')) {
                     const blob = await item.getType('text/html');
                     const htmlText = await blob.text();
@@ -291,7 +445,6 @@
                     }
                 }
 
-                // 3. その他の画像形式（image/jpegなど）
                 for (const type of item.types) {
                     if (type.startsWith('image/') && type !== 'image/png') {
                         const blob = await item.getType(type);
@@ -313,11 +466,9 @@
                 return;
             }
 
-            // クリップボードが空、または特殊形式だった場合は予備エリアを表示
             showFallbackPaste("クリップボードから直接取得できませんでした。下の枠を長押ししてペーストしてください。");
 
         } catch (err) {
-            // キャンセルまたはブラウザ制限時は予備エリアを自動表示
             showFallbackPaste("直接読み取りがブロックされました。下の枠を長押しして「ペースト」を押してください。");
         }
     }
@@ -329,8 +480,12 @@
         fallbackPasteArea.innerHTML = defaultFallbackText;
     }
 
-    // 予備エリアおよび画面全体での標準ペーストイベント（Ctrl+Vや長押しペースト時）
     window.addEventListener('paste', async function(e) {
+        // テキスト入力欄にフォーカスがある時は通常の文字ペーストを許可する
+        if (document.activeElement && document.activeElement.id === 'overlayText') {
+            return;
+        }
+
         const cd = e.clipboardData;
         if (!cd) return;
 
@@ -428,11 +583,14 @@
             document.getElementById('canvasH').value = img.height;
             customWidth = img.width;
             customHeight = img.height;
+            textX = customWidth / 2;
+            textY = customHeight / 2;
+            isTextInitialized = true;
             draw();
         }
     });
 
-    // ドラッグ＆スワイプ移動
+    // ドラッグ＆スワイプ移動（開いているタブの対象を移動）
     function getCanvasPos(e) {
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -446,19 +604,32 @@
     }
 
     function onPointerDown(e) {
-        if (!fgImage) return;
-        isDragging = true;
         const pos = getCanvasPos(e);
-        startX = pos.x - fgX;
-        startY = pos.y - fgY;
+        if (activeTab === 'image') {
+            if (!fgImage) return;
+            isDragging = true;
+            startX = pos.x - fgX;
+            startY = pos.y - fgY;
+        } else {
+            const rawText = document.getElementById('overlayText').value;
+            if (!rawText || rawText.trim().length === 0) return;
+            isDragging = true;
+            startX = pos.x - textX;
+            startY = pos.y - textY;
+        }
     }
 
     function onPointerMove(e) {
-        if (!isDragging || !fgImage) return;
+        if (!isDragging) return;
         e.preventDefault();
         const pos = getCanvasPos(e);
-        fgX = pos.x - startX;
-        fgY = pos.y - startY;
+        if (activeTab === 'image') {
+            fgX = pos.x - startX;
+            fgY = pos.y - startY;
+        } else {
+            textX = pos.x - startX;
+            textY = pos.y - startY;
+        }
         draw();
     }
 
@@ -472,9 +643,11 @@
     canvas.addEventListener('touchmove', onPointerMove, {passive: false});
     canvas.addEventListener('touchend', onPointerUp);
 
+    // 現在の状態を新しい背景に結合（画像もテキストも背景に焼き付ける）
     function setAsNewBackground() {
-        if (!bgImage && !fgImage) {
-            alert("画像が配置されていません。");
+        const hasText = document.getElementById('overlayText').value.trim().length > 0;
+        if (!bgImage && !fgImage && !hasText) {
+            alert("画像やテキストが配置されていません。");
             return;
         }
         const dataURL = canvas.toDataURL('image/png');
@@ -484,17 +657,19 @@
             fgImage = null;
             document.getElementById('fgInput').value = "";
             document.getElementById('fgFileName').innerText = "未選択";
+            document.getElementById('overlayText').value = "";
             document.getElementById('bgFileName').innerText = "結合画像";
             statusMsg.style.color = "#0056b3";
-            statusMsg.innerText = "背景に結合しました。続けて次の画像をペーストできます。";
+            statusMsg.innerText = "背景に結合しました。続けて次の画像やテキストを重ねられます。";
             draw();
         };
         img.src = dataURL;
     }
 
     function saveImage() {
-        if (!bgImage && !fgImage) { 
-            alert("画像が読み込まれていません。"); 
+        const hasText = document.getElementById('overlayText').value.trim().length > 0;
+        if (!bgImage && !fgImage && !hasText) { 
+            alert("画像やテキストが読み込まれていません。"); 
             return; 
         }
         const link = document.createElement('a');
