@@ -164,12 +164,12 @@ h1 {
 }
 
 .inline-label {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: bold;
     white-space: nowrap;
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
 }
 
 .size-row input[type="number"] {
@@ -313,13 +313,13 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
 }
 
 .text-style-row input[type="color"] {
-    width: 28px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     padding: 0;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -328,12 +328,12 @@ h1 {
 }
 
 .text-style-row input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     margin: 0;
 }
 
-/* 十字キーと2段スライダー（縮尺・角度） */
+/* 十字キー＋角度微調整ボタン＆2段スライダー */
 .controls {
     display: flex;
     gap: 10px;
@@ -343,12 +343,18 @@ h1 {
     border-top: 1px solid #dbe9f6;
 }
 
+.pad-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
 .d-pad {
     display: grid;
     grid-template-columns: 34px 34px 34px;
     gap: 3px;
     text-align: center;
-    flex-shrink: 0;
 }
 
 .d-pad button {
@@ -358,8 +364,9 @@ h1 {
     background: white;
     border-radius: 4px;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: #007bff;
+    line-height: 1.1;
 }
 
 .d-pad button:active {
@@ -368,8 +375,32 @@ h1 {
 
 .d-pad .up { grid-column: 2; }
 .d-pad .left { grid-column: 1; }
-.d-pad .right { grid-column: 3; }
 .d-pad .down { grid-column: 2; grid-row: 2; }
+.d-pad .right { grid-column: 3; }
+
+/* 角度を1度ずつ増減させるボタン */
+.angle-step-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    width: 100%;
+}
+
+.angle-step-row button {
+    padding: 5px 0;
+    cursor: pointer;
+    border: 1px solid #d39e00;
+    background: #fff8e1;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.72rem;
+    color: #856404;
+    white-space: nowrap;
+}
+
+.angle-step-row button:active {
+    background: #ffeeba;
+}
 
 .sliders-stack {
     display: flex;
