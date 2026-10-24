@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>画像合成ツール</title>
+    <title>画像重ね合わせツール</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -77,9 +77,21 @@
                     <button type="button" class="right" onclick="moveActive(10, 0)">右</button>
                     <button type="button" class="down" onclick="moveActive(0, 10)">下</button>
                 </div>
-                <div class="scale-control" id="scaleBox">
-                    <strong>画像の縮尺: <span id="scaleValue">100%</span></strong>
-                    <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
+                <div class="sliders-stack">
+                    <div class="scale-control" id="scaleBox">
+                        <div class="slider-header">
+                            <strong>縮尺: <span id="scaleValue">100%</span></strong>
+                            <button type="button" class="btn-mini" onclick="toggleFlipFg()">↔ 左右反転</button>
+                        </div>
+                        <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
+                    </div>
+                    <div class="scale-control" id="angleBox">
+                        <div class="slider-header">
+                            <strong>角度: <span id="angleValue">0°</span></strong>
+                            <button type="button" class="btn-mini" onclick="resetFgAngle()">0°に戻す</button>
+                        </div>
+                        <input type="range" id="fgAngle" min="-180" max="180" step="1" value="0" oninput="updateAngle()">
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,9 +127,20 @@
                     <button type="button" class="right" onclick="moveActive(10, 0)">右</button>
                     <button type="button" class="down" onclick="moveActive(0, 10)">下</button>
                 </div>
-                <div class="scale-control" id="textSizeBox">
-                    <strong>文字サイズ: <span id="textSizeValue">40px</span></strong>
-                    <input type="range" id="textSize" min="12" max="160" step="2" value="40" oninput="updateTextLayer()">
+                <div class="sliders-stack">
+                    <div class="scale-control" id="textSizeBox">
+                        <div class="slider-header">
+                            <strong>文字サイズ: <span id="textSizeValue">40px</span></strong>
+                        </div>
+                        <input type="range" id="textSize" min="12" max="160" step="2" value="40" oninput="updateTextLayer()">
+                    </div>
+                    <div class="scale-control" id="textAngleBox">
+                        <div class="slider-header">
+                            <strong>角度: <span id="textAngleValue">0°</span></strong>
+                            <button type="button" class="btn-mini" onclick="resetTextAngle()">0°に戻す</button>
+                        </div>
+                        <input type="range" id="textAngle" min="-180" max="180" step="1" value="0" oninput="updateTextLayer()">
+                    </div>
                 </div>
             </div>
         </div>
@@ -142,16 +165,19 @@
     
     let activeTab = 'image'; // 'image' または 'text'
 
-    // 背景と画像レイヤーの変数
+    // 背景と画像レイヤーの変数（fgX, fgY は画像の中心座標）
     let bgImage = null;
     let fgImage = null;
     let customWidth = 800;
     let customHeight = 600;
-    let fgX = 0, fgY = 0;
+    let fgX = 400, fgY = 300;
     let fgScale = 1.0;
+    let fgAngle = 0; // 度数（-180〜180）
+    let fgFlipX = false; // 左右反転
 
-    // テキストレイヤーの変数
+    // テキストレイヤーの変数（textX, textY はテキストの中心座標）
     let textX = 400, textY = 300;
+    let textAngle = 0;
     let isTextInitialized = false;
 
     let isDragging = false;
@@ -160,7 +186,7 @@
     updateCanvasSize();
 
     // スライダー操作時の画面ブレ防止
-    ['scaleBox', 'textSizeBox'].forEach(id => {
+    ['scaleBox', 'angleBox', 'textSizeBox', 'textAngleBox'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('touchmove', function(e) {
@@ -207,9 +233,30 @@
         draw();
     }
 
+    function updateAngle() {
+        fgAngle = parseInt(document.getElementById('fgAngle').value) || 0;
+        document.getElementById('angleValue').innerText = fgAngle + '°';
+        draw();
+    }
+
+    function resetFgAngle() {
+        fgAngle = 0;
+        document.getElementById('fgAngle').value = 0;
+        document.getElementById('angleValue').innerText = '0°';
+        draw();
+    }
+
+    function toggleFlipFg() {
+        fgFlipX = !fgFlipX;
+        draw();
+    }
+
     function updateTextLayer() {
         const size = document.getElementById('textSize').value;
         document.getElementById('textSizeValue').innerText = size + 'px';
+        textAngle = parseInt(document.getElementById('textAngle').value) || 0;
+        document.getElementById('textAngleValue').innerText = textAngle + '°';
+
         if (!isTextInitialized) {
             textX = customWidth / 2;
             textY = customHeight / 2;
@@ -218,8 +265,16 @@
         draw();
     }
 
+    function resetTextAngle() {
+        textAngle = 0;
+        document.getElementById('textAngle').value = 0;
+        document.getElementById('textAngleValue').innerText = '0°';
+        draw();
+    }
+
     function clearTextLayer() {
         document.getElementById('overlayText').value = '';
+        resetTextAngle();
         draw();
     }
 
@@ -244,14 +299,21 @@
             }
         }
         
-        // 2. 重ねる画像の描画
+        // 2. 重ねる画像の描画（画像の中心 fgX, fgY を軸に回転・反転・拡縮）
         if (fgImage) {
             const w = fgImage.width * fgScale;
             const h = fgImage.height * fgScale;
-            ctx.drawImage(fgImage, fgX, fgY, w, h);
+            ctx.save();
+            ctx.translate(fgX, fgY);
+            ctx.rotate(fgAngle * Math.PI / 180);
+            if (fgFlipX) {
+                ctx.scale(-1, 1);
+            }
+            ctx.drawImage(fgImage, -w / 2, -h / 2, w, h);
+            ctx.restore();
         }
 
-        // 3. テキストボックスの描画
+        // 3. テキストボックスの描画（テキストの中心 textX, textY を軸に回転）
         const rawText = document.getElementById('overlayText').value;
         if (rawText && rawText.trim().length > 0) {
             const lines = rawText.split('\n');
@@ -263,6 +325,9 @@
             const boxBg = document.getElementById('textBoxBg').value;
 
             ctx.save();
+            ctx.translate(textX, textY);
+            ctx.rotate(textAngle * Math.PI / 180);
+
             ctx.font = `${isBold ? 'bold ' : ''}${fontSize}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -283,21 +348,21 @@
                 const boxH = totalHeight + padY * 2;
 
                 ctx.fillStyle = boxBg;
-                ctx.fillRect(textX - boxW / 2, textY - boxH / 2, boxW, boxH);
+                ctx.fillRect(-boxW / 2, -boxH / 2, boxW, boxH);
             }
 
             // 各行の文字描画
-            const startY = textY - (totalHeight / 2) + (lineHeight / 2);
+            const startY = -(totalHeight / 2) + (lineHeight / 2);
             for (let i = 0; i < lines.length; i++) {
                 const ly = startY + i * lineHeight;
                 if (hasOutline) {
                     ctx.strokeStyle = outlineColor;
                     ctx.lineWidth = Math.max(2, Math.round(fontSize * 0.12));
                     ctx.lineJoin = 'round';
-                    ctx.strokeText(lines[i], textX, ly);
+                    ctx.strokeText(lines[i], 0, ly);
                 }
                 ctx.fillStyle = textColor;
-                ctx.fillText(lines[i], textX, ly);
+                ctx.fillText(lines[i], 0, ly);
             }
             ctx.restore();
         }
@@ -363,8 +428,15 @@
         document.getElementById('fgScale').value = 1.0;
         fgScale = 1.0;
         document.getElementById('scaleValue').innerText = '100%';
-        fgX = (customWidth - fgImage.width) / 2;
-        fgY = (customHeight - fgImage.height) / 2;
+        
+        document.getElementById('fgAngle').value = 0;
+        fgAngle = 0;
+        document.getElementById('angleValue').innerText = '0°';
+        fgFlipX = false;
+
+        // キャンバスの中央に配置
+        fgX = customWidth / 2;
+        fgY = customHeight / 2;
         
         fallbackPasteArea.style.display = 'none';
         document.getElementById('fgFileName').innerText = "ペースト済";
@@ -481,7 +553,6 @@
     }
 
     window.addEventListener('paste', async function(e) {
-        // テキスト入力欄にフォーカスがある時は通常の文字ペーストを許可する
         if (document.activeElement && document.activeElement.id === 'overlayText') {
             return;
         }
@@ -643,7 +714,7 @@
     canvas.addEventListener('touchmove', onPointerMove, {passive: false});
     canvas.addEventListener('touchend', onPointerUp);
 
-    // 現在の状態を新しい背景に結合（画像もテキストも背景に焼き付ける）
+    // 現在の状態を新しい背景に結合
     function setAsNewBackground() {
         const hasText = document.getElementById('overlayText').value.trim().length > 0;
         if (!bgImage && !fgImage && !hasText) {
@@ -658,6 +729,8 @@
             document.getElementById('fgInput').value = "";
             document.getElementById('fgFileName').innerText = "未選択";
             document.getElementById('overlayText').value = "";
+            resetFgAngle();
+            resetTextAngle();
             document.getElementById('bgFileName').innerText = "結合画像";
             statusMsg.style.color = "#0056b3";
             statusMsg.innerText = "背景に結合しました。続けて次の画像やテキストを重ねられます。";
