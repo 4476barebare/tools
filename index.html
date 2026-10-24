@@ -2,171 +2,9 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>画像重ね合わせツール</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: sans-serif; padding: 10px; background: #f5f5f5; margin: 0; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 14px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h1 { font-size: 1.2em; margin-top: 0; margin-bottom: 12px; text-align: center; }
-        
-        /* 3つのメインセクション */
-        .section-box { margin-bottom: 12px; padding: 12px; background: #eef7ff; border-radius: 6px; }
-        .section-footer { margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; }
-
-        /* 横一列レイアウト用の共通行クラス */
-        .row-line {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-             gap: 6px;
-            margin-bottom: 8px;
-            width: 100%;
-        }
-        .row-line:last-child { margin-bottom: 0; }
-
-        /* スマホUIに合わせた小さめ見出し・ラベル */
-        .sec-title { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
-        .inline-label { font-size: 0.8rem; font-weight: bold; white-space: nowrap; display: flex; align-items: center; gap: 3px; }
-
-        /* コンパクトなファイル選択ボタン（標準の「ファイル未選択」を隠して横一列に収める） */
-        .file-btn-label {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px 10px;
-            background: #fff;
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            font-size: 0.78rem;
-            font-weight: bold;
-            color: #333;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .file-btn-label:active { background: #e9ecef; }
-        .file-btn-label input[type="file"] { display: none; }
-        .file-status { font-size: 0.72rem; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px; }
-
-        /* 幅・高さ・サイズ適用ボタンの横一列調整 */
-        .size-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
-            width: 100%;
-            flex-wrap: nowrap;
-        }
-        .size-row input[type="number"] {
-            width: 62px;
-            padding: 5px 4px;
-            font-size: 0.85rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-align: right;
-        }
-        .btn-small {
-            margin-left: auto;
-            padding: 6px 10px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 0.78rem;
-            font-weight: bold;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .btn-small:active { background: #5a6268; }
-
-        /* 背景の配置セレクトボックス（はみ出し防止） */
-        .select-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            width: 100%;
-        }
-        .select-row select {
-            flex: 1;
-            min-width: 0;
-            width: 100%;
-            padding: 6px;
-            font-size: 0.82rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: #fff;
-        }
-
-        /* ペースト専用エリア */
-        #pasteInputArea {
-            margin-top: 8px;
-            width: 100%;
-            min-height: 52px;
-            border: 2px dashed #007bff;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #007bff;
-            background: #ffffff;
-            font-weight: bold;
-            font-size: 0.85rem;
-            cursor: text;
-            outline: none;
-            text-align: center;
-            padding: 6px;
-        }
-        #pasteInputArea:focus { background: #e8f4ff; border-style: solid; }
-
-        #statusMsg {
-            margin-top: 6px;
-            font-size: 0.78rem;
-            font-weight: bold;
-            color: #0056b3;
-        }
-
-        /* 十字キーと縮尺スライダー */
-        .controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #dbe9f6;
-        }
-        .d-pad { display: grid; grid-template-columns: 36px 36px 36px; gap: 3px; text-align: center; flex-shrink: 0; }
-        .d-pad button { padding: 7px 0; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px; font-weight: bold; font-size: 0.82rem; }
-        .d-pad button:active { background: #eee; }
-        .d-pad .up { grid-column: 2; }
-        .d-pad .left { grid-column: 1; }
-        .d-pad .right { grid-column: 3; }
-        .d-pad .down { grid-column: 2; grid-row: 2; }
-        
-        .scale-control { background: #fff3cd; padding: 8px; border-radius: 6px; flex: 1; min-width: 0; border: 1px solid #ffeeba; font-size: 0.82rem; }
-        .scale-control input[type="range"] { width: 100%; margin-top: 4px; }
-
-        /* キャンバス表示部 */
-        .guide-text { font-size: 0.75rem; color: #666; margin: 0 0 6px 0; }
-        canvas { 
-            border: 1px solid #999; 
-            max-width: 100%; 
-            height: auto; 
-            touch-action: none;
-            cursor: move;
-            display: block;
-            margin: 0 auto;
-            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-        }
-        
-        /* 保存・結合ボタン */
-        .btn-flatten { background: #17a2b8; color: white; border: none; padding: 11px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: bold; width: 100%; margin-top: 10px;}
-        .btn-flatten:active { background: #138496; }
-        .btn-save { background: #28a745; color: white; border: none; padding: 11px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: bold; width: 100%; margin-top: 8px;}
-        .btn-save:active { background: #218838; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -175,10 +13,10 @@
     
     <!-- ① 背景キャンバスの設定 -->
     <div class="section-box">
-        <!-- 1行目: タイトルとファイル選択ボタンを横一列 -->
-        <div class="row-line">
+        <!-- 1行目: position指定で右端にボタンを固定し飛び出しを防止 -->
+        <div class="header-line">
             <span class="sec-title">1. 背景キャンバスの設定</span>
-            <div style="display:flex; align-items:center; gap:4px;">
+            <div class="file-action-area">
                 <span id="bgFileName" class="file-status">未選択</span>
                 <label class="file-btn-label">
                     ファイルを選択
@@ -194,7 +32,7 @@
             <button class="btn-small" onclick="updateCanvasSize()">サイズ適用</button>
         </div>
 
-        <!-- 3行目: 背景の配置（横幅に合わせて収める） -->
+        <!-- 3行目: 背景の配置 -->
         <div class="select-row">
             <span class="inline-label">背景の配置:</span>
             <select id="bgMode" onchange="draw()">
@@ -207,9 +45,9 @@
     
     <!-- ② 重ねる画像を追加・調整 -->
     <div class="section-box">
-        <div class="row-line">
+        <div class="header-line">
             <span class="sec-title">2. 重ねる画像を追加</span>
-            <div style="display:flex; align-items:center; gap:4px;">
+            <div class="file-action-area">
                 <span id="fgFileName" class="file-status">未選択</span>
                 <label class="file-btn-label">
                     ファイルを選択
@@ -230,7 +68,7 @@
                 <button class="right" onclick="moveFg(10, 0)">右</button>
                 <button class="down" onclick="moveFg(0, 10)">下</button>
             </div>
-            <div class="scale-control">
+            <div class="scale-control" id="scaleBox">
                 <strong>画像の縮尺: <span id="scaleValue">100%</span></strong>
                 <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
             </div>
@@ -266,6 +104,12 @@
     let startX, startY;
 
     updateCanvasSize();
+
+    // スライダー操作時に画面全体が上下にスクロールしてブレるのを防ぐ処理
+    const scaleBox = document.getElementById('scaleBox');
+    scaleBox.addEventListener('touchmove', function(e) {
+        e.stopPropagation();
+    }, { passive: false });
 
     function updateCanvasSize() {
         customWidth = parseInt(document.getElementById('canvasW').value) || 800;
