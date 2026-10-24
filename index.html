@@ -13,7 +13,6 @@
     
     <!-- ① 背景キャンバスの設定 -->
     <div class="section-box">
-        <!-- 1行目: position指定で右端にボタンを固定し飛び出しを防止 -->
         <div class="header-line">
             <span class="sec-title">1. 背景キャンバスの設定</span>
             <div class="file-action-area">
@@ -25,14 +24,12 @@
             </div>
         </div>
 
-        <!-- 2行目: 幅・高さ・サイズ適用ボタンを横一列 -->
         <div class="size-row">
             <label class="inline-label">幅:<input type="number" id="canvasW" value="800">px</label>
             <label class="inline-label">高さ:<input type="number" id="canvasH" value="600">px</label>
             <button class="btn-small" onclick="updateCanvasSize()">サイズ適用</button>
         </div>
 
-        <!-- 3行目: 背景の配置 -->
         <div class="select-row">
             <span class="inline-label">背景の配置:</span>
             <select id="bgMode" onchange="draw()">
@@ -56,9 +53,16 @@
             </div>
         </div>
 
-        <div id="pasteInputArea" contenteditable="true">
-            <span style="pointer-events: none;">👆 タップして長押し →「ペースト」</span>
+        <!-- 普通のボタンでペーストを実行 -->
+        <button type="button" class="btn-paste" id="pasteBtn" onclick="handleButtonPaste()">
+            📋 クリップボードからペースト
+        </button>
+
+        <!-- 万が一ボタンAPIが拒否された時だけ現れる予備エリア（普段は非表示） -->
+        <div id="fallbackPasteArea" contenteditable="true" style="display: none;">
+            <span style="pointer-events: none;">👆 ここを長押しして「ペースト」を選択</span>
         </div>
+
         <div id="statusMsg"></div>
 
         <div class="controls">
@@ -88,9 +92,9 @@
 <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const pasteInputArea = document.getElementById('pasteInputArea');
+    const fallbackPasteArea = document.getElementById('fallbackPasteArea');
     const statusMsg = document.getElementById('statusMsg');
-    const defaultPlaceholder = '<span style="pointer-events: none;">👆 タップして長押し →「ペースト」</span>';
+    const defaultFallbackText = '<span style="pointer-events: none;">👆 ここを長押しして「ペースト」を選択</span>';
     
     let bgImage = null;
     let fgImage = null;
@@ -105,7 +109,7 @@
 
     updateCanvasSize();
 
-    // スライダー操作時に画面全体が上下にスクロールしてブレるのを防ぐ処理
+    // スライダー操作時の画面ブレ防止
     const scaleBox = document.getElementById('scaleBox');
     scaleBox.addEventListener('touchmove', function(e) {
         e.stopPropagation();
@@ -153,6 +157,7 @@
         fgX += dx; fgY += dy; draw();
     }
 
+    // 透明な余白をカットし、Canvasを直接返す（タイミングバグゼロ）
     function trimAndCheckTransparency(img) {
         const w = img.naturalWidth || img.width;
         const h = img.naturalHeight || img.height;
@@ -204,6 +209,9 @@
         fgX = (customWidth - fgImage.width) / 2;
         fgY = (customHeight - fgImage.height) / 2;
         
+        fallbackPasteArea.style.display = 'none';
+        document.getElementById('fgFileName').innerText = "ペースト済";
+
         if (result.isCutout) {
             statusMsg.style.color = "#28a745";
             statusMsg.innerText = `✅ 切り抜き画像（透過あり）を配置しました (${fgImage.width}×${fgImage.height}px)`;
@@ -214,14 +222,7 @@
         draw();
     }
 
-    function resetPasteArea() {
-        setTimeout(() => {
-            pasteInputArea.innerHTML = defaultPlaceholder;
-            pasteInputArea.blur();
-        }, 80);
-    }
-
-    function fileToImage(file) {
+    function blobToImage(blob) {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = function(evt) {
@@ -231,11 +232,105 @@
                 img.src = evt.target.result;
             };
             reader.onerror = () => resolve(null);
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(blob);
         });
     }
 
-    pasteInputArea.addEventListener('paste', async function(e) {
+    // 【メイン機能】普通のボタン1回タップでクリップボードから透過画像を読み取る
+    async function handleButtonPaste() {
+        statusMsg.style.color = "#0056b3";
+        statusMsg.innerText = "⏳ クリップボードを読み取り中...";
+
+        try {
+            if (!navigator.clipboard || !navigator.clipboard.read) {
+                throw new Error("Clipboard API non-supported");
+            }
+
+            const items = await navigator.clipboard.read();
+            let fallbackRes = null;
+
+            for (const item of items) {
+                // 1. image/png があれば最優先で検査
+                if (item.types.includes('image/png')) {
+                    const blob = await item.getType('image/png');
+                    const img = await blobToImage(blob);
+                    if (img) {
+                        const res = trimAndCheckTransparency(img);
+                        if (res.isCutout) {
+                            setForegroundResult(res);
+                            return;
+                        }
+                        if (!fallbackRes) fallbackRes = res;
+                    }
+                }
+
+                // 2. text/html の中に <img> タグがある場合も検査
+                if (item.types.includes('text/html')) {
+                    const blob = await item.getType('text/html');
+                    const htmlText = await blob.text();
+                    if (htmlText && htmlText.indexOf('<img') !== -1) {
+                        const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+                        const imgTag = doc.querySelector('img');
+                        if (imgTag && imgTag.src) {
+                            const img = await new Promise((resolve) => {
+                                const i = new Image();
+                                i.crossOrigin = "anonymous";
+                                i.onload = () => resolve(i);
+                                i.onerror = () => resolve(null);
+                                i.src = imgTag.src;
+                            });
+                            if (img) {
+                                const res = trimAndCheckTransparency(img);
+                                if (res.isCutout) {
+                                    setForegroundResult(res);
+                                    return;
+                                }
+                                if (!fallbackRes) fallbackRes = res;
+                            }
+                        }
+                    }
+                }
+
+                // 3. その他の画像形式（image/jpegなど）
+                for (const type of item.types) {
+                    if (type.startsWith('image/') && type !== 'image/png') {
+                        const blob = await item.getType(type);
+                        const img = await blobToImage(blob);
+                        if (img) {
+                            const res = trimAndCheckTransparency(img);
+                            if (res.isCutout) {
+                                setForegroundResult(res);
+                                return;
+                            }
+                            if (!fallbackRes) fallbackRes = res;
+                        }
+                    }
+                }
+            }
+
+            if (fallbackRes) {
+                setForegroundResult(fallbackRes);
+                return;
+            }
+
+            // クリップボードが空、または特殊形式だった場合は予備エリアを表示
+            showFallbackPaste("クリップボードから直接取得できませんでした。下の枠を長押ししてペーストしてください。");
+
+        } catch (err) {
+            // キャンセルまたはブラウザ制限時は予備エリアを自動表示
+            showFallbackPaste("直接読み取りがブロックされました。下の枠を長押しして「ペースト」を押してください。");
+        }
+    }
+
+    function showFallbackPaste(msg) {
+        statusMsg.style.color = "#d9534f";
+        statusMsg.innerText = msg;
+        fallbackPasteArea.style.display = 'flex';
+        fallbackPasteArea.innerHTML = defaultFallbackText;
+    }
+
+    // 予備エリアおよび画面全体での標準ペーストイベント（Ctrl+Vや長押しペースト時）
+    window.addEventListener('paste', async function(e) {
         const cd = e.clipboardData;
         if (!cd) return;
 
@@ -268,13 +363,15 @@
 
         if (files.length > 0 || htmlImgSrc) {
             e.preventDefault();
-            resetPasteArea();
-            document.getElementById('fgFileName').innerText = "ペースト済";
+            setTimeout(() => {
+                fallbackPasteArea.innerHTML = defaultFallbackText;
+                fallbackPasteArea.blur();
+            }, 80);
 
             let fallbackResult = null;
 
             for (const f of files) {
-                const img = await fileToImage(f);
+                const img = await blobToImage(f);
                 if (!img) continue;
                 const res = trimAndCheckTransparency(img);
                 if (res.isCutout) {
@@ -304,22 +401,7 @@
             if (fallbackResult) {
                 setForegroundResult(fallbackResult);
             }
-            return;
         }
-
-        setTimeout(() => {
-            const pastedImg = pasteInputArea.querySelector('img');
-            if (pastedImg && pastedImg.src) {
-                const img = new Image();
-                img.onload = () => {
-                    document.getElementById('fgFileName').innerText = "ペースト済";
-                    const res = trimAndCheckTransparency(img);
-                    setForegroundResult(res);
-                };
-                img.src = pastedImg.src;
-            }
-            resetPasteArea();
-        }, 150);
     });
 
     // ファイル選択（重ねる画像）
@@ -327,7 +409,7 @@
         const file = e.target.files[0];
         if (!file) return;
         document.getElementById('fgFileName').innerText = file.name;
-        const img = await fileToImage(file);
+        const img = await blobToImage(file);
         if (img) {
             const res = trimAndCheckTransparency(img);
             setForegroundResult(res);
@@ -339,7 +421,7 @@
         const file = e.target.files[0];
         if (!file) return;
         document.getElementById('bgFileName').innerText = file.name;
-        const img = await fileToImage(file);
+        const img = await blobToImage(file);
         if (img) {
             bgImage = img;
             document.getElementById('canvasW').value = img.width;
