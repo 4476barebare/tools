@@ -63,7 +63,7 @@ h1 {
     align-items: center;
     min-height: 30px;
     margin-bottom: 8px;
-    padding-right: 155px; /* 右側のファイル名＋ボタン用のスペースを確保 */
+    padding-right: 155px;
 }
 
 .sec-title {
@@ -83,7 +83,6 @@ h1 {
     max-width: 150px;
 }
 
-/* ファイル名が長くても「...」で省略し、絶対に枠外へ飛び出させない */
 .file-status {
     font-size: 0.68rem;
     color: #666;
@@ -141,7 +140,7 @@ h1 {
 .size-row input[type="number"] {
     width: 60px;
     padding: 5px 4px;
-    font-size: 16px; /* iOSでの入力時自動ズーム防止 */
+    font-size: 16px;
     transform: scale(0.9);
     transform-origin: left center;
     margin-right: -4px;
@@ -188,31 +187,47 @@ h1 {
     background: #fff;
 }
 
-/* ペースト専用エリア */
-#pasteInputArea {
-    margin-top: 6px;
-    width: 100%;
-    min-height: 48px;
-    border: 2px dashed #007bff;
-    border-radius: 6px;
+/* ワンタップ・ペーストボタン */
+.btn-paste {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #007bff;
-    background: #ffffff;
+    width: 100%;
+    padding: 11px;
+    margin-top: 4px;
+    background: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
     font-weight: bold;
-    font-size: 0.82rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.btn-paste:active {
+    background: #0056b3;
+}
+
+/* 予備の長押しペースト枠（普段は非表示） */
+#fallbackPasteArea {
+    margin-top: 6px;
+    width: 100%;
+    min-height: 44px;
+    border: 2px dashed #dc3545;
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    color: #dc3545;
+    background: #fff;
+    font-weight: bold;
+    font-size: 0.8rem;
     cursor: text;
     outline: none;
     text-align: center;
     padding: 6px;
     user-select: text;
     -webkit-user-select: text;
-}
-
-#pasteInputArea:focus {
-    background: #e8f4ff;
-    border-style: solid;
 }
 
 #statusMsg {
@@ -260,7 +275,6 @@ h1 {
 .d-pad .right { grid-column: 3; }
 .d-pad .down { grid-column: 2; grid-row: 2; }
 
-/* スライダー操作時にページ全体が揺れるのを防ぐ touch-action 指定 */
 .scale-control {
     background: #fff3cd;
     padding: 8px 10px;
