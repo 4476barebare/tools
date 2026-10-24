@@ -39,7 +39,7 @@ h1 {
     text-align: center;
 }
 
-/* 3つのメインセクション */
+/* セクション共通スタイル */
 .section-box {
     margin-bottom: 10px;
     padding: 10px;
@@ -54,6 +54,41 @@ h1 {
     background: #f8f9fa;
     border-radius: 6px;
     border: 1px solid #e9ecef;
+}
+
+/* タブ切り替えUI */
+.tab-wrapper {
+    margin-bottom: 10px;
+}
+
+.tab-header {
+    display: flex;
+    gap: 4px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 9px 6px;
+    font-size: 0.82rem;
+    font-weight: bold;
+    border: 1px solid #cce0f5;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: #dbe9f6;
+    color: #555;
+    cursor: pointer;
+    text-align: center;
+}
+
+.tab-btn.active {
+    background: #eef7ff;
+    color: #0056b3;
+    border-color: #eef7ff;
+}
+
+.tab-content {
+    margin-bottom: 0;
+    border-radius: 0 0 6px 6px;
 }
 
 /* 1行目: position: relative / absolute で右端にボタンを完全固定 */
@@ -168,7 +203,7 @@ h1 {
     background: #5a6268;
 }
 
-/* 3行目: 背景の配置セレクトボックス */
+/* 3行目: セレクトボックス共通 */
 .select-row {
     display: flex;
     align-items: center;
@@ -209,7 +244,7 @@ h1 {
     background: #0056b3;
 }
 
-/* 予備の長押しペースト枠（普段は非表示） */
+/* 予備の長押しペースト枠 */
 #fallbackPasteArea {
     margin-top: 6px;
     width: 100%;
@@ -237,7 +272,68 @@ h1 {
     color: #0056b3;
 }
 
-/* 十字キーと縮尺スライダー */
+/* テキスト編集タブ専用スタイル */
+.text-input-row {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+    margin-bottom: 8px;
+}
+
+.text-input-row textarea {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 16px; /* iOSの自動ズーム防止 */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+    font-family: inherit;
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.btn-clear-text {
+    padding: 0 10px;
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-clear-text:active {
+    background: #bd2130;
+}
+
+.text-style-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.text-style-row input[type="color"] {
+    width: 28px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.text-style-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+
+/* 十字キーとスライダー */
 .controls {
     display: flex;
     gap: 10px;
