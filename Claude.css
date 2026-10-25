@@ -8,6 +8,12 @@
                 ・タブのラベル折り返しを解消（アイコン上・文字下）
                 ・十字キーと角度ボタンを横並びにして縦の無駄を削減
                 ・サイズ適用ボタン／背景配置セレクトを全幅表示に
+   改訂       : リテイク2回目（再確認を受けて調整）
+                ・CSS切替セレクトの文字切れと矢印消失を修正（全幅化）
+                ・黒ボタンが黒い影と同化していた問題を、青ボタンで解消
+                ・文字装飾の4項目を2×2に整理し、入力欄の説明文切れを解消
+                ・角度ボタンの小さな記号をSVGアイコンに差し替え
+                ・タブ継ぎ目の欠けを修正、改行位置を均等化
 
    テーマ「ステッカー工房」
    このツールの仕事は「切り抜いたものを貼る」こと。
@@ -142,6 +148,7 @@ button {
 }
 
 .app-container .css-switcher-area {
+    flex-wrap: wrap;
     gap: 8px;
     width: 100%;
     padding: 8px;
@@ -151,33 +158,39 @@ button {
 }
 
 .app-container .css-theme-select {
-    flex: 1;
-    width: auto;
+    flex: 1 1 100%;
+    width: 100%;
     min-width: 0;
     max-width: none;
     height: var(--tap);
     padding: 0 34px 0 12px;
     font-size: 16px;
+    font-weight: 700;
     color: var(--ink);
     background-color: var(--paper);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 6l5 5 5-5' fill='none' stroke='%2316161d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
     border: var(--bw) solid var(--ink);
     border-radius: 12px;
 }
 
 .app-container .btn-cycle-css {
+    flex: 1 1 100%;
     min-height: var(--tap);
     padding: 0 14px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 800;
     color: var(--paper);
-    background: var(--ink);
+    background: var(--blue);
     border: var(--bw) solid var(--ink);
     border-radius: 12px;
     box-shadow: var(--shadow);
 }
 
 .app-container .btn-cycle-css:active {
-    background: var(--ink);
+    background: var(--blue);
 }
 
 /* ==========================================================================
@@ -367,7 +380,7 @@ button {
     font-weight: 800;
     white-space: nowrap;
     color: var(--paper);
-    background: var(--ink);
+    background: var(--blue);
     border-radius: 12px;
     flex-shrink: 0;
 }
@@ -446,7 +459,7 @@ button {
 
 .tab-btn.is-active {
     color: var(--ink);
-    border-bottom-color: transparent;
+    border-bottom-width: 0;
 }
 
 .tab-btn-image.is-active {
@@ -593,7 +606,7 @@ button {
 .text-area-input.overlay-textarea {
     flex: 1;
     min-width: 0;
-    min-height: 58px;
+    min-height: 68px;
     padding: 8px 10px;
     font-size: 16px;
     font-family: inherit;
@@ -610,6 +623,7 @@ button {
 
 .text-area-input.overlay-textarea::placeholder {
     color: #767684;
+    font-size: 0.82rem;
     font-weight: 600;
 }
 
@@ -625,10 +639,10 @@ button {
 }
 
 .text-style-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 4px 14px;
+    gap: 6px 12px;
 }
 
 .text-style-row .inline-label {
@@ -741,15 +755,50 @@ button {
     gap: 4px;
 }
 
+/* 元の「↶ -1°」は端末の字形が小さく潰れるため、文字を隠して
+   SVGの回転矢印＋数値を疑似要素で描く（HTML無変更） */
 .angle-step-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     min-height: var(--tap);
     padding: 0 4px;
-    font-size: 0.88rem;
+    font-size: 0;
     font-weight: 800;
     white-space: nowrap;
     color: var(--ink);
     background: var(--paper);
     border-radius: 10px;
+}
+
+.angle-step-btn::before {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
+.angle-step-btn::after {
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.angle-minus-btn::before {
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2316161d' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='1 4 1 10 7 10'/%3E%3Cpath d='M3.51 15a9 9 0 1 0 2.13-9.36L1 10'/%3E%3C/svg%3E");
+}
+
+.angle-minus-btn::after {
+    content: "-1°";
+}
+
+.angle-plus-btn::before {
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2316161d' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='23 4 23 10 17 10'/%3E%3Cpath d='M20.49 15a9 9 0 1 1-2.12-9.36L23 10'/%3E%3C/svg%3E");
+}
+
+.angle-plus-btn::after {
+    content: "+1°";
 }
 
 .sliders-stack {
@@ -905,6 +954,11 @@ button {
     flex-direction: column;
     gap: 12px;
     margin-top: 16px;
+}
+
+.btn-flatten.action-btn-flatten,
+.guide-text.canvas-guide-text {
+    text-wrap: balance;
 }
 
 .btn-flatten.action-btn-flatten {
