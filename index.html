@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>画像重ね合わせツール</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" id="themeStylesheet">
 </head>
 <body class="app-body">
 
 <div class="container app-container" id="appContainer">
-    <h1 class="app-title" id="appTitle">画像重ね合わせツール</h1>
+    <div class="app-header-bar" id="appHeaderBar">
+        <h1 class="app-title" id="appTitle">画像重ね合わせツール</h1>
+        <div class="css-switcher-area" id="cssSwitcherArea">
+            <select id="cssThemeSelect" class="select-input css-theme-select" onchange="changeCssFromSelect(this.value)"></select>
+            <button type="button" class="btn-small btn-cycle-css" id="btnCycleCss" onclick="cycleCssTheme()">🎨 CSS切替</button>
+        </div>
+    </div>
     
     <!-- ① 背景キャンバスの設定（常時表示） -->
     <div class="section-box section-bg-settings" id="sectionBgSettings">
@@ -202,6 +208,57 @@
 </div>
 
 <script>
+    // =========================================================
+    // CSSファイル切り替え機能（ここに用意したCSSファイルを追加できます）
+    // =========================================================
+    const cssFileList = [
+        { name: 'デフォルト (style.css)', file: 'style.css' },
+        { name: 'chatGPT GPT-6', file: 'chatGPT.css' },
+        { name: 'Gemini 1.5 Pro', file: 'Gemini.css' },
+        { name: 'Claude Sonnet 5.5', file: 'Claude.css' },
+        { name: 'Grok', file: 'Grok.css' }
+    ];
+    let currentCssIndex = 0;
+
+    function initCssSwitcher() {
+        const selectEl = document.getElementById('cssThemeSelect');
+        if (!selectEl) return;
+        selectEl.innerHTML = '';
+        cssFileList.forEach((item, index) => {
+            const opt = document.createElement('option');
+            opt.value = index;
+            opt.textContent = item.name;
+            opt.className = 'select-option css-theme-option';
+            selectEl.appendChild(opt);
+        });
+        selectEl.value = currentCssIndex;
+    }
+
+    function applyCssByIndex(index) {
+        if (index < 0 || index >= cssFileList.length) return;
+        currentCssIndex = index;
+        const linkEl = document.getElementById('themeStylesheet');
+        if (linkEl) {
+            linkEl.setAttribute('href', cssFileList[currentCssIndex].file);
+        }
+        const selectEl = document.getElementById('cssThemeSelect');
+        if (selectEl) {
+            selectEl.value = currentCssIndex;
+        }
+    }
+
+    function changeCssFromSelect(indexStr) {
+        applyCssByIndex(parseInt(indexStr, 10));
+    }
+
+    function cycleCssTheme() {
+        const nextIndex = (currentCssIndex + 1) % cssFileList.length;
+        applyCssByIndex(nextIndex);
+    }
+
+    initCssSwitcher();
+    // =========================================================
+
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const fallbackPasteArea = document.getElementById('fallbackPasteArea');
