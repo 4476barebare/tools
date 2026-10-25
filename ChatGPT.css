@@ -1,7 +1,8 @@
 /*
- * CSS Design Competition — Round 1
+ * CSS Design Competition — Round 1 / Retake 1
  * Model: GPT-6 (ChatGPT)
  * Generated: 2026-10-25
+ * Revision: Retake 1 — mobile header wrapping and reduced control-panel spacing
  * Design concept: Precision Studio — a calm, editorial image-editing workspace.
  * UX priorities: clear hierarchy, tactile controls, visible states, responsive canvas.
  */
@@ -1081,5 +1082,112 @@ textarea:focus-visible,
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
+    }
+}
+
+/*
+ * Retake 1 — responsive header and tighter mobile control density
+ * Scope: preserve the original DOM and all existing interactions.
+ */
+@media (max-width: 640px) {
+    .container.app-container .app-header-bar {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 9px;
+        width: 100%;
+        min-width: 0;
+        margin-bottom: 14px;
+    }
+
+    .container.app-container .app-header-bar .app-title {
+        flex: 1 1 100%;
+        min-width: 0;
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.35;
+    }
+
+    .container.app-container .css-switcher-area {
+        display: flex;
+        flex: 1 1 100%;
+        min-width: 0;
+        width: 100%;
+        gap: 7px;
+    }
+
+    .container.app-container .css-theme-select {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+        min-height: 36px;
+        padding: 6px 8px;
+        font-size: .82rem;
+    }
+
+    .container.app-container .btn-cycle-css {
+        flex: 0 0 auto;
+        min-height: 36px;
+        padding: 6px 9px;
+        font-size: .78rem;
+    }
+
+    .section-box {
+        padding: 11px;
+    }
+
+    .section-footer.preview-footer-section {
+        padding: 11px;
+    }
+
+    .header-line {
+        gap: 8px;
+        margin-bottom: 11px;
+    }
+
+    .controls {
+        gap: 10px;
+    }
+
+    .sliders-stack {
+        gap: 9px;
+    }
+
+    .scale-control {
+        padding: 9px 9px 8px;
+    }
+}
+
+@media (max-width: 380px) {
+    .container.app-container .app-header-bar {
+        gap: 7px;
+        margin-bottom: 11px;
+    }
+
+    .container.app-container .app-header-bar .app-title {
+        font-size: .98rem;
+    }
+
+    .container.app-container .css-switcher-area {
+        gap: 5px;
+    }
+
+    .container.app-container .css-theme-select {
+        font-size: .76rem;
+        padding-right: 4px;
+        padding-left: 6px;
+    }
+
+    .container.app-container .btn-cycle-css {
+        padding: 6px 7px;
+        font-size: .72rem;
+    }
+
+    .section-box {
+        padding: 9px;
+    }
+
+    .section-footer.preview-footer-section {
+        padding: 9px;
     }
 }
