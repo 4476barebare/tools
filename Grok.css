@@ -1,0 +1,644 @@
+/* ==========================================================================
+   Grok (xAI) - Clean Creative Tool
+   Model: Grok (latest free-tier available)
+   Theme: Clean Creative Tool — 清潔で使いやすいクリエイティブツール
+   UX最優先：タッチターゲット拡大・視認性・操作フィードバック・情報階層の明確化
+   ========================================================================== */
+
+/* ==========================================================================
+   基本リセット・ページ全体固定（横ブレ・バウンス防止）
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-html,
+.app-body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    user-select: none;
+    -webkit-user-select: none;
+    line-height: 1.45;
+}
+
+.app-body {
+    padding: 12px 10px 24px;
+}
+
+/* 状態管理用ユーティリティクラス */
+.is-hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   メインコンテナ・タイトル
+   ========================================================================== */
+.container.app-container {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 16px 14px 18px;
+    border-radius: 16px;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 4px 16px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+}
+
+.app-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 14px 0;
+    text-align: center;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+/* ==========================================================================
+   セクション共通ボックス（①背景設定 / ②タブ内容 / ③フッター）
+   ========================================================================== */
+.section-box {
+    margin-bottom: 12px;
+    padding: 14px 12px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.section-footer.preview-footer-section {
+    margin-top: 12px;
+    padding: 14px 12px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+/* ==========================================================================
+   ヘッダー行・ファイル選択ボタン固定レイアウト
+   ========================================================================== */
+.header-line {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    margin-bottom: 10px;
+    padding-right: 160px;
+}
+
+.sec-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.file-action-area {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 155px;
+}
+
+.file-status {
+    font-size: 0.7rem;
+    color: #64748b;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.file-btn-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 10px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.file-btn-label:active {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.file-input {
+    display: none;
+}
+
+/* ==========================================================================
+   ① 背景キャンバス設定：サイズ入力行・配置セレクト行
+   ========================================================================== */
+.size-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    width: 100%;
+    flex-wrap: nowrap;
+}
+
+.inline-label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.number-input {
+    width: 62px;
+    padding: 7px 6px;
+    font-size: 16px;
+    transform: scale(0.92);
+    transform-origin: left center;
+    margin-right: -4px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    text-align: right;
+    background: #ffffff;
+    color: #1e293b;
+}
+
+.number-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.btn-small.btn-apply-size {
+    margin-left: auto;
+    padding: 8px 12px;
+    background: #475569;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+}
+
+.btn-small.btn-apply-size:active {
+    background: #334155;
+}
+
+.select-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.text-bg-select-row {
+    margin-top: 8px;
+}
+
+.select-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1e293b;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+}
+
+.select-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* ==========================================================================
+   ② タブ切り替えナビゲーション
+   ========================================================================== */
+.tab-wrapper.editor-tab-wrapper {
+    margin-bottom: 12px;
+}
+
+.tab-header.editor-tab-header {
+    display: flex;
+    gap: 6px;
+}
+
+.tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 11px 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.tab-btn.is-active {
+    background: #f8fafc;
+    color: #4f46e5;
+    border-color: #e2e8f0;
+    border-bottom-color: #f8fafc;
+    position: relative;
+    z-index: 1;
+}
+
+.tab-content {
+    margin-bottom: 0;
+    border-radius: 0 0 12px 12px;
+    border-top: none;
+}
+
+/* ==========================================================================
+   タブA：画像ペーストボタン・予備エリア・ステータスメッセージ
+   ========================================================================== */
+.btn-paste.fg-paste-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 12px;
+    margin-top: 6px;
+    background: #4f46e5;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-paste.fg-paste-btn:active {
+    background: #4338ca;
+    transform: scale(0.98);
+}
+
+.fallback-paste-area {
+    margin-top: 8px;
+    width: 100%;
+    min-height: 48px;
+    border: 2px dashed #ef4444;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    background: #fef2f2;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: text;
+    outline: none;
+    text-align: center;
+    padding: 8px;
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.fallback-paste-placeholder {
+    pointer-events: none;
+}
+
+.status-msg {
+    margin-top: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #4f46e5;
+    padding: 6px 0;
+}
+
+.status-msg.is-info {
+    color: #4f46e5;
+}
+
+.status-msg.is-success {
+    color: #16a34a;
+}
+
+.status-msg.is-error {
+    color: #dc2626;
+}
+
+/* ==========================================================================
+   タブB：テキスト入力・文字装飾コントロール
+   ========================================================================== */
+.text-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    margin-bottom: 10px;
+}
+
+.text-area-input.overlay-textarea {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    resize: none;
+    font-family: inherit;
+    background: #ffffff;
+    color: #1e293b;
+    user-select: text;
+    -webkit-user-select: text;
+    line-height: 1.4;
+}
+
+.text-area-input.overlay-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.btn-clear-text {
+    padding: 0 14px;
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+.btn-clear-text:active {
+    background: #dc2626;
+}
+
+.text-style-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex-wrap: nowrap;
+    margin-bottom: 4px;
+}
+
+.color-input {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.checkbox-input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #4f46e5;
+}
+
+/* ==========================================================================
+   共通操作パネル（矢印キー・1度刻み角度ボタン・スライダー群）
+   ========================================================================== */
+.controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.pad-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.d-pad {
+    display: grid;
+    grid-template-columns: 38px 38px 38px;
+    gap: 4px;
+    text-align: center;
+}
+
+.d-pad-btn {
+    padding: 8px 0;
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #4f46e5;
+    line-height: 1.1;
+    transition: background 0.1s ease, border-color 0.1s ease;
+}
+
+.d-pad-btn:active {
+    background: #eef2ff;
+    border-color: #a5b4fc;
+}
+
+.d-pad-btn.up { grid-column: 2; }
+.d-pad-btn.left { grid-column: 1; }
+.d-pad-btn.down { grid-column: 2; grid-row: 2; }
+.d-pad-btn.right { grid-column: 3; }
+
+.angle-step-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    width: 100%;
+}
+
+.angle-step-btn {
+    padding: 7px 0;
+    cursor: pointer;
+    border: 1px solid #f59e0b;
+    background: #fffbeb;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.74rem;
+    color: #b45309;
+    white-space: nowrap;
+    transition: background 0.1s ease;
+}
+
+.angle-step-btn:active {
+    background: #fef3c7;
+}
+
+.sliders-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.scale-control {
+    background: #fffbeb;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #fde68a;
+    font-size: 0.78rem;
+    touch-action: none;
+}
+
+.slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.btn-mini {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: #ffffff;
+    border: 1px solid #f59e0b;
+    color: #b45309;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.1s ease;
+}
+
+.btn-mini:active,
+.btn-mini.is-flipped {
+    background: #fef3c7;
+}
+
+.range-input {
+    width: 100%;
+    height: 28px;
+    margin: 2px 0 0 0;
+    touch-action: none;
+    cursor: pointer;
+    accent-color: #4f46e5;
+}
+
+/* ==========================================================================
+   ③ キャンバス表示・結合＆保存アクションボタン
+   ========================================================================== */
+.guide-text.canvas-guide-text {
+    font-size: 0.74rem;
+    color: #64748b;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.canvas-wrapper {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #e2e8f0;
+    padding: 4px;
+}
+
+.main-canvas {
+    border: 1px solid #94a3b8;
+    max-width: 100%;
+    height: auto;
+    touch-action: none;
+    cursor: move;
+    display: block;
+    margin: 0 auto;
+    border-radius: 6px;
+    background-image:
+        linear-gradient(45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1),
+        linear-gradient(45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1);
+    background-size: 16px 16px;
+    background-position: 0 0, 8px 8px;
+    background-color: #f8fafc;
+}
+
+.footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.btn-flatten.action-btn-flatten {
+    background: #0ea5e9;
+    color: #ffffff;
+    border: none;
+    padding: 14px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.25);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-flatten.action-btn-flatten:active {
+    background: #0284c7;
+    transform: scale(0.98);
+}
+
+.btn-save.action-btn-save {
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    padding: 14px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-save.action-btn-save:active {
+    background: #15803d;
+    transform: scale(0.98);
+}
