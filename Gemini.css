@@ -1,38 +1,35 @@
 /*
- * Entry No.2: Gemini (Retake 2 - Mobile Optimized Dark UI)
+ * Entry No.2: Gemini (FINAL RETAKE - Ultimate Native UI)
  * Model: Gemini 1.5 Pro
- * Theme: "Modern Flat Dark & Touch Optimized"
+ * Theme: "Apple Native Dark & Pixel Perfect"
  * 
  * ==========================================================================
  * 変数定義 & 基本リセット
  * ========================================================================== */
 :root {
     /* カラーパレット - Apple/iOSライクな洗練されたダークトーン */
-    --bg-base: #000000;          /* 最背面（完全な黒） */
-    --bg-surface: #1c1c1e;       /* パネル背景 */
-    --bg-elevated: #2c2c2e;      /* 浮いた要素の背景（入力欄など） */
+    --bg-base: #000000;          
+    --bg-surface: #1c1c1e;       
+    --bg-elevated: #2c2c2e;      
     --bg-elevated-hover: #3a3a3c;
     
     --text-primary: #ffffff;
-    --text-secondary: #ebebf5;   /* 少し透けた白 */
-    --text-muted: #ebebf599;     /* さらに透けた白 */
+    --text-secondary: #ebebf5;   
+    --text-muted: #ebebf580;     
     
     --border-color: #38383a;
+    --border-light: #48484a;
     
-    /* アクセントカラー */
-    --color-accent: #0a84ff;     /* iOSブルー */
-    --color-accent-hover: #007aff;
+    /* アクセントカラー（微細なグラデーション用） */
+    --color-accent: #0a84ff;     
     --color-danger: #ff453a;
     --color-success: #32d74b;
-    --color-warning: #ffd60a;
     
-    /* 角丸 */
     --radius-sm: 8px;
     --radius-md: 16px;
     --radius-lg: 24px;
     
-    /* タップ領域・余白 */
-    --touch-target: 44px; /* モバイルの最小タップサイズ */
+    --touch-target: 44px; 
     --spacing-sm: 8px;
     --spacing-md: 16px;
     --spacing-lg: 24px;
@@ -73,25 +70,23 @@ body {
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
-    padding-bottom: 40px; /* フッター下の余裕 */
+    padding-bottom: 40px; 
 }
 
-/* ヘッダーエリアのモバイル対応 */
 .app-header-bar {
     display: flex;
-    flex-wrap: wrap; /* 狭い画面で折り返す */
+    flex-wrap: wrap; 
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-md);
-    padding: 0 var(--spacing-sm);
+    padding: 4px var(--spacing-sm);
 }
 
 .app-header-bar .app-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--text-primary);
 }
 
 .css-switcher-area {
@@ -99,31 +94,41 @@ body {
     align-items: center;
     gap: var(--spacing-sm);
     background: var(--bg-surface);
-    padding: 4px;
+    padding: 6px;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--border-color);
 }
 
-.css-theme-select {
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 0.8rem;
-    padding: 4px 8px;
-    outline: none;
+/* ★改善1：セレクトボックスにカスタム矢印（SVG）を追加し、ネイティブ感を演出 */
+.css-theme-select, .select-input {
     appearance: none;
     -webkit-appearance: none;
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 8px 32px 8px 12px; /* 矢印の分の右余白 */
+    font-size: 0.9rem;
+    outline: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ebebf5' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: var(--transition);
 }
+.css-theme-select:focus, .select-input:focus { border-color: var(--color-accent); }
 
 .btn-cycle-css {
     background: var(--bg-elevated);
     color: var(--text-primary);
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 6px 10px;
-    font-size: 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
     font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
 }
+.btn-cycle-css:active { background: var(--border-light); }
 
 /* ==========================================================================
    共通パネルデザイン
@@ -133,7 +138,6 @@ body {
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-md);
-    /* border: 1px solid var(--border-color); 重い線を削除し、フラットに */
 }
 
 /* ==========================================================================
@@ -149,7 +153,6 @@ body {
 .sec-title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
 }
 
 .file-action-area {
@@ -171,23 +174,22 @@ body {
     background-color: var(--bg-elevated);
     color: var(--color-accent);
     padding: 8px 16px;
-    border-radius: 20px; /* ピル型 */
+    border-radius: 20px; 
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
 }
 .file-btn-label:active { background-color: var(--bg-elevated-hover); transform: scale(0.96); }
-
 .file-input { display: none; }
 
 /* ==========================================================================
-   入力フォーム共通 (サイズ入力、セレクトボックス)
+   入力フォーム共通
    ========================================================================== */
 .size-row {
     display: flex;
-    flex-wrap: wrap; /* スマホで折り返し対応 */
-    gap: var(--spacing-sm);
+    flex-wrap: wrap; 
+    gap: 12px;
     margin-bottom: var(--spacing-md);
     align-items: center;
 }
@@ -195,31 +197,31 @@ body {
 .inline-label {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 0.9rem;
     color: var(--text-secondary);
 }
 
-.number-input, .select-input, .text-area-input {
+.number-input, .text-area-input {
     background-color: var(--bg-elevated);
     color: var(--text-primary);
-    border: 1px solid transparent;
+    border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
-    font-size: 1rem; /* スマホでズームされないサイズ */
+    font-size: 1rem; 
     transition: var(--transition);
     outline: none;
 }
-.number-input:focus, .select-input:focus, .text-area-input:focus {
+.number-input:focus, .text-area-input:focus {
     border-color: var(--color-accent);
     background-color: var(--bg-surface);
 }
 
 .number-input { width: 80px; text-align: center; }
-.select-input { flex: 1; width: 100%; appearance: none; -webkit-appearance: none;}
+.text-area-input::placeholder { color: var(--text-muted); }
 
 .btn-small {
-    background-color: var(--bg-elevated);
+    background-color: var(--border-light);
     color: var(--text-primary);
     border: none;
     border-radius: var(--radius-sm);
@@ -227,43 +229,43 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
+    transition: var(--transition);
 }
-.btn-small:active { background-color: var(--bg-elevated-hover); }
+.btn-small:active { background-color: var(--text-secondary); color: var(--bg-base); }
 
-/* 背景配置セレクト行 */
 .select-row {
     display: flex;
-    flex-direction: column; /* 縦並びにしてタップしやすく */
+    flex-direction: column; 
     align-items: flex-start;
     gap: 8px;
 }
 .select-row .inline-label { width: 100%; }
 
 /* ==========================================================================
-   ② タブ切り替え
+   ② タブ切り替え（★改善2：iOS Segmented Control風）
    ========================================================================== */
 .tab-wrapper { margin-bottom: var(--spacing-md); }
 
 .tab-header {
     display: flex;
-    background-color: var(--bg-surface);
-    border-radius: var(--radius-md) var(--radius-md) 0 0;
-    padding: 4px;
-    gap: 4px;
-    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-elevated); /* 溝を表現 */
+    border-radius: 9px;
+    padding: 2px;
+    gap: 2px;
+    border: none;
 }
 
 .tab-btn {
     flex: 1;
-    padding: 12px 8px;
+    padding: 8px 4px;
     background-color: transparent;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     border: none;
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.25s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -271,15 +273,16 @@ body {
 }
 
 .tab-btn.is-active {
-    background-color: var(--bg-elevated);
+    background-color: var(--bg-surface);
     color: var(--text-primary);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.05);
 }
 
 .tab-content {
     background-color: var(--bg-surface);
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    border-radius: var(--radius-md);
     padding: var(--spacing-md);
+    margin-top: var(--spacing-sm);
 }
 
 /* ==========================================================================
@@ -287,10 +290,12 @@ body {
    ========================================================================== */
 .btn-paste {
     width: 100%;
-    background-color: var(--color-accent);
+    /* iOSのPrimary Button風グラデーションと光沢 */
+    background: linear-gradient(180deg, #2a9df4 0%, #007aff 100%);
+    box-shadow: 0 2px 4px rgba(0, 122, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     color: #ffffff;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: 12px;
     padding: 14px;
     font-size: 1rem;
     font-weight: 600;
@@ -300,14 +305,13 @@ body {
     justify-content: center;
     align-items: center;
     gap: 8px;
-    transition: var(--transition);
 }
-.btn-paste:active { transform: scale(0.98); background-color: var(--color-accent-hover); }
+.btn-paste:active { background: #007aff; box-shadow: none; transform: scale(0.98); }
 
 .fallback-paste-area {
     margin-top: 12px;
     padding: 20px;
-    border: 2px dashed var(--color-danger);
+    border: 2px dashed rgba(255, 69, 58, 0.5);
     background-color: rgba(255, 69, 58, 0.1);
     color: var(--color-danger);
     text-align: center;
@@ -328,37 +332,42 @@ body {
 .status-msg.is-error { background: rgba(255, 69, 58, 0.15); color: var(--color-danger); }
 
 /* ==========================================================================
-   操作パネル（D-Pad & スライダー）※改善のコア部分
+   操作パネル（D-Pad & スライダー） ★改善3：コントローラーとしての統一感
    ========================================================================== */
 .controls {
     display: flex;
-    flex-direction: column; /* スマホ向けに縦並び配置に変更 */
+    flex-direction: column; 
     gap: var(--spacing-lg);
     margin-top: var(--spacing-lg);
     padding-top: var(--spacing-md);
     border-top: 1px solid var(--border-color);
 }
 
-/* 十字キー（D-Pad）の拡大とレイアウト調整 */
 .pad-column {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* 左右に散らす */
+    justify-content: space-around; 
     gap: 16px;
+    width: 100%;
 }
 
+/* 十字キーを囲む「台座」を作り、ゲームパッドのような一体感を持たせる */
 .d-pad {
     display: grid;
-    grid-template-columns: repeat(3, var(--touch-target));
-    grid-template-rows: repeat(2, var(--touch-target));
-    gap: 6px;
+    grid-template-columns: var(--touch-target) var(--touch-target) var(--touch-target);
+    grid-template-rows: var(--touch-target) var(--touch-target);
+    gap: 4px;
+    background: var(--bg-elevated);
+    padding: 8px;
+    border-radius: 30px; 
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .d-pad-btn {
-    background-color: var(--bg-elevated);
+    background-color: var(--bg-surface);
     color: var(--text-primary);
-    border: none;
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
     font-size: 1.2rem;
     font-weight: bold;
     display: flex;
@@ -366,44 +375,43 @@ body {
     justify-content: center;
     cursor: pointer;
 }
-.d-pad-btn:active { background-color: var(--bg-elevated-hover); transform: scale(0.9); }
+.d-pad-btn:active { background-color: var(--bg-elevated); transform: scale(0.9); box-shadow: none; }
 
-.d-pad-btn.up { grid-column: 2; }
-.d-pad-btn.left { grid-column: 1; grid-row: 2; }
-.d-pad-btn.down { grid-column: 2; grid-row: 2; }
-.d-pad-btn.right { grid-column: 3; grid-row: 2; }
+/* 繋がっているように角丸を調整 */
+.d-pad-btn.up { grid-column: 2; grid-row: 1; border-radius: 12px 12px 4px 4px; }
+.d-pad-btn.left { grid-column: 1; grid-row: 2; border-radius: 12px 4px 4px 12px; }
+.d-pad-btn.down { grid-column: 2; grid-row: 2; border-radius: 4px 4px 12px 12px; }
+.d-pad-btn.right { grid-column: 3; grid-row: 2; border-radius: 4px 12px 12px 4px; }
 
 /* 角度ステップボタン */
 .angle-step-row {
     display: flex;
-    flex-direction: column; /* 縦並びにして幅を確保 */
-    gap: 8px;
+    flex-direction: column; 
+    gap: 12px;
     width: 100%;
-    max-width: 120px;
+    max-width: 130px;
 }
 
 .angle-step-btn {
-    padding: 12px 0;
+    padding: 14px 0; 
     background-color: var(--bg-elevated);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
     font-size: 0.9rem;
     font-weight: 500;
 }
+.angle-step-btn:active { background-color: var(--border-light); }
 
-/* スライダー群の改善 */
+/* スライダー群 */
 .sliders-stack {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 24px; 
     width: 100%;
 }
 
-.scale-control {
-    background: transparent;
-    padding: 0;
-}
+.scale-control { padding: 0; }
 
 .slider-header {
     display: flex;
@@ -413,7 +421,7 @@ body {
 }
 
 .slider-title {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-secondary);
     font-weight: 500;
 }
@@ -422,14 +430,14 @@ body {
 .btn-mini {
     background-color: var(--bg-elevated);
     color: var(--text-primary);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    padding: 6px 14px;
+    border-radius: 16px;
     font-size: 0.8rem;
 }
-.btn-mini:active { background-color: var(--color-accent); color: white; }
+.btn-mini:active { background-color: var(--border-light); }
 
-/* カスタムスライダー (操作しやすく太く、ツマミを大きく) */
+/* カスタムスライダー */
 .range-input {
     -webkit-appearance: none;
     width: 100%;
@@ -438,28 +446,30 @@ body {
     border-radius: 4px;
     outline: none;
     margin: 10px 0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
 }
 .range-input::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 28px; /* ツマミを大きく */
-    height: 28px;
+    width: 30px; 
+    height: 30px;
     border-radius: 50%;
     background: #ffffff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border: 1px solid #d1d1d6;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     cursor: pointer;
 }
 .range-input::-webkit-slider-thumb:active {
-    transform: scale(1.1);
-    background: var(--color-accent);
+    transform: scale(1.15);
+    background: #f2f2f7;
 }
 
 /* ==========================================================================
-   タブB：テキスト設定
+   タブB：テキスト設定 
    ========================================================================== */
 .text-input-row {
     display: flex;
-    flex-direction: column; /* 縦並び */
-    gap: 8px;
+    flex-direction: column; 
+    gap: 12px;
     margin-bottom: var(--spacing-md);
 }
 
@@ -470,37 +480,44 @@ body {
 
 .btn-clear-text {
     align-self: flex-end;
-    padding: 8px 16px;
-    background-color: var(--bg-elevated);
+    padding: 10px 20px;
+    background-color: var(--border-light);
     color: var(--text-primary);
     border: none;
     border-radius: var(--radius-sm);
     font-weight: 600;
+    font-size: 0.9rem;
 }
+.btn-clear-text:active { background-color: var(--text-muted); }
 
+/* 装飾ボタングループ */
 .text-style-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 16px;
     background-color: var(--bg-elevated);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     margin-bottom: var(--spacing-md);
 }
 
 .text-style-row .inline-label {
     background: var(--bg-surface);
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-light);
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .color-input {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     border: 2px solid var(--border-color);
     border-radius: 50%;
     background: transparent;
+    cursor: pointer;
 }
 .color-input::-webkit-color-swatch-wrapper { padding: 0; }
 .color-input::-webkit-color-swatch { border: none; border-radius: 50%; }
@@ -509,6 +526,7 @@ body {
     width: 20px;
     height: 20px;
     accent-color: var(--color-accent);
+    cursor: pointer;
 }
 
 .text-bg-select-row {
@@ -535,8 +553,8 @@ body {
     background-color: var(--bg-base);
     padding: 2px;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--border-color);
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    border: 1px solid var(--border-light);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
     overflow: hidden;
 }
 
@@ -546,13 +564,12 @@ body {
     max-width: 100%;
     height: auto;
     cursor: move;
-    /* ダークテーマ用チェッカーボード */
     background-image: 
-        linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222),
-        linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222);
+        linear-gradient(45deg, #1a1a1a 25%, transparent 25%, transparent 75%, #1a1a1a 75%, #1a1a1a),
+        linear-gradient(45deg, #1a1a1a 25%, transparent 25%, transparent 75%, #1a1a1a 75%, #1a1a1a);
     background-size: 20px 20px;
     background-position: 0 0, 10px 10px;
-    background-color: #111;
+    background-color: #0a0a0a;
 }
 
 .footer-actions {
@@ -566,7 +583,7 @@ body {
     width: 100%;
     padding: 16px;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
@@ -576,12 +593,14 @@ body {
 .action-btn-flatten {
     background-color: var(--bg-elevated);
     color: var(--color-accent);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-light);
 }
-.action-btn-flatten:active { background-color: var(--bg-elevated-hover); transform: scale(0.98); }
+.action-btn-flatten:active { background-color: var(--border-light); transform: scale(0.98); }
 
 .action-btn-save {
-    background-color: var(--text-primary);
-    color: var(--bg-base);
+    /* 保存ボタンもPrimary Button風に */
+    background: linear-gradient(180deg, #32d74b 0%, #28cd41 100%);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(40, 205, 65, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
-.action-btn-save:active { background-color: var(--text-secondary); transform: scale(0.98); }
+.action-btn-save:active { background: #28cd41; box-shadow: none; transform: scale(0.98); }
