@@ -1,158 +1,186 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" class="app-html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>画像重ね合わせツール</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="app-body">
 
-<div class="container">
-    <h1>画像重ね合わせツール</h1>
+<div class="container app-container" id="appContainer">
+    <h1 class="app-title" id="appTitle">画像重ね合わせツール</h1>
     
     <!-- ① 背景キャンバスの設定（常時表示） -->
-    <div class="section-box">
-        <div class="header-line">
-            <span class="sec-title">1. 背景キャンバスの設定</span>
-            <div class="file-action-area">
-                <span id="bgFileName" class="file-status">未選択</span>
-                <label class="file-btn-label">
-                    ファイルを選択
-                    <input type="file" id="bgInput" accept="image/*">
+    <div class="section-box section-bg-settings" id="sectionBgSettings">
+        <div class="header-line bg-header-line">
+            <span class="sec-title bg-sec-title">1. 背景キャンバスの設定</span>
+            <div class="file-action-area bg-file-action-area">
+                <span id="bgFileName" class="file-status bg-file-status">未選択</span>
+                <label class="file-btn-label bg-file-btn-label" id="bgFileBtnLabel">
+                    <span class="file-btn-text bg-file-btn-text">ファイルを選択</span>
+                    <input type="file" id="bgInput" class="file-input bg-file-input" accept="image/*">
                 </label>
             </div>
         </div>
 
-        <div class="size-row">
-            <label class="inline-label">幅:<input type="number" id="canvasW" value="800">px</label>
-            <label class="inline-label">高さ:<input type="number" id="canvasH" value="600">px</label>
-            <button class="btn-small" onclick="updateCanvasSize()">サイズ適用</button>
+        <div class="size-row bg-size-row">
+            <label class="inline-label size-label width-label" for="canvasW">
+                <span class="label-text width-label-text">幅:</span>
+                <input type="number" id="canvasW" class="number-input width-input" value="800">
+                <span class="unit-text width-unit-text">px</span>
+            </label>
+            <label class="inline-label size-label height-label" for="canvasH">
+                <span class="label-text height-label-text">高さ:</span>
+                <input type="number" id="canvasH" class="number-input height-input" value="600">
+                <span class="unit-text height-unit-text">px</span>
+            </label>
+            <button type="button" class="btn-small btn-apply-size" id="btnApplySize" onclick="updateCanvasSize()">サイズ適用</button>
         </div>
 
-        <div class="select-row">
-            <span class="inline-label">背景の配置:</span>
-            <select id="bgMode" onchange="draw()">
-                <option value="stretch">引き伸ばす（縦横比を無視）</option>
-                <option value="cover">はみ出しをカット（縦横比維持・全面）</option>
-                <option value="contain">余白を透明に補完（縦横比維持・全体）</option>
+        <div class="select-row bg-select-row">
+            <span class="inline-label select-label bg-mode-label">背景の配置:</span>
+            <select id="bgMode" class="select-input bg-mode-select" onchange="draw()">
+                <option value="stretch" class="select-option bg-option-stretch">引き伸ばす（縦横比を無視）</option>
+                <option value="cover" class="select-option bg-option-cover">はみ出しをカット（縦横比維持・全面）</option>
+                <option value="contain" class="select-option bg-option-contain">余白を透明に補完（縦横比維持・全体）</option>
             </select>
         </div>
     </div>
     
     <!-- ② 重ねる要素の編集（タブ切り替えエリア） -->
-    <div class="tab-wrapper">
-        <div class="tab-header">
-            <button type="button" class="tab-btn active" id="tabBtnImage" onclick="switchTab('image')">🖼️ 2. 画像を重ねる</button>
-            <button type="button" class="tab-btn" id="tabBtnText" onclick="switchTab('text')">🔤 2. テキストを重ねる</button>
+    <div class="tab-wrapper editor-tab-wrapper" id="editorTabWrapper">
+        <div class="tab-header editor-tab-header">
+            <button type="button" class="tab-btn tab-btn-image is-active" id="tabBtnImage" onclick="switchTab('image')">
+                <span class="tab-icon tab-icon-image">🖼️</span>
+                <span class="tab-label tab-label-image">2. 画像を重ねる</span>
+            </button>
+            <button type="button" class="tab-btn tab-btn-text" id="tabBtnText" onclick="switchTab('text')">
+                <span class="tab-icon tab-icon-text">🔤</span>
+                <span class="tab-label tab-label-text">2. テキストを重ねる</span>
+            </button>
         </div>
 
         <!-- タブA: 画像を重ねる -->
-        <div class="section-box tab-content" id="tabImage">
-            <div class="header-line">
-                <span class="sec-title">重ねる画像の読み込み</span>
-                <div class="file-action-area">
-                    <span id="fgFileName" class="file-status">未選択</span>
-                    <label class="file-btn-label">
-                        ファイルを選択
-                        <input type="file" id="fgInput" accept="image/*">
+        <div class="section-box tab-content tab-content-image" id="tabImage">
+            <div class="header-line fg-header-line">
+                <span class="sec-title fg-sec-title">重ねる画像の読み込み</span>
+                <div class="file-action-area fg-file-action-area">
+                    <span id="fgFileName" class="file-status fg-file-status">未選択</span>
+                    <label class="file-btn-label fg-file-btn-label" id="fgFileBtnLabel">
+                        <span class="file-btn-text fg-file-btn-text">ファイルを選択</span>
+                        <input type="file" id="fgInput" class="file-input fg-file-input" accept="image/*">
                     </label>
                 </div>
             </div>
 
-            <button type="button" class="btn-paste" id="pasteBtn" onclick="handleButtonPaste()">
-                📋 クリップボードからペースト
+            <button type="button" class="btn-paste fg-paste-btn" id="pasteBtn" onclick="handleButtonPaste()">
+                <span class="paste-btn-icon">📋</span>
+                <span class="paste-btn-text">クリップボードからペースト</span>
             </button>
 
-            <div id="fallbackPasteArea" contenteditable="true" style="display: none;">
-                <span style="pointer-events: none;">👆 ここを長押しして「ペースト」を選択</span>
+            <div id="fallbackPasteArea" class="fallback-paste-area is-hidden" contenteditable="true">
+                <span class="fallback-paste-placeholder">👆 ここを長押しして「ペースト」を選択</span>
             </div>
 
-            <div id="statusMsg"></div>
+            <div id="statusMsg" class="status-msg fg-status-msg"></div>
 
-            <div class="controls">
-                <div class="pad-column">
-                    <div class="d-pad">
-                        <button type="button" class="up" onclick="moveActive(0, -10)">↑</button>
-                        <button type="button" class="left" onclick="moveActive(-10, 0)">←</button>
-                        <button type="button" class="down" onclick="moveActive(0, 10)">↓</button>
-                        <button type="button" class="right" onclick="moveActive(10, 0)">→</button>
+            <div class="controls fg-controls">
+                <div class="pad-column fg-pad-column">
+                    <div class="d-pad fg-d-pad">
+                        <button type="button" class="d-pad-btn up fg-btn-up" onclick="moveActive(0, -10)">↑</button>
+                        <button type="button" class="d-pad-btn left fg-btn-left" onclick="moveActive(-10, 0)">←</button>
+                        <button type="button" class="d-pad-btn down fg-btn-down" onclick="moveActive(0, 10)">↓</button>
+                        <button type="button" class="d-pad-btn right fg-btn-right" onclick="moveActive(10, 0)">→</button>
                     </div>
-                    <div class="angle-step-row">
-                        <button type="button" onclick="stepAngle(-1)">↶ -1°</button>
-                        <button type="button" onclick="stepAngle(1)">↷ +1°</button>
+                    <div class="angle-step-row fg-angle-step-row">
+                        <button type="button" class="angle-step-btn angle-minus-btn fg-angle-minus" onclick="stepAngle(-1)">↶ -1°</button>
+                        <button type="button" class="angle-step-btn angle-plus-btn fg-angle-plus" onclick="stepAngle(1)">↷ +1°</button>
                     </div>
                 </div>
-                <div class="sliders-stack">
-                    <div class="scale-control" id="scaleBox">
-                        <div class="slider-header">
-                            <strong>縮尺: <span id="scaleValue">100%</span></strong>
-                            <button type="button" class="btn-mini" onclick="toggleFlipFg()">↔ 左右反転</button>
+                <div class="sliders-stack fg-sliders-stack">
+                    <div class="scale-control fg-scale-control" id="scaleBox">
+                        <div class="slider-header fg-scale-header">
+                            <strong class="slider-title fg-scale-title">縮尺: <span id="scaleValue" class="slider-value fg-scale-value">100%</span></strong>
+                            <button type="button" class="btn-mini btn-flip-horizontal" id="btnFlipFg" onclick="toggleFlipFg()">↔ 左右反転</button>
                         </div>
-                        <input type="range" id="fgScale" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
+                        <input type="range" id="fgScale" class="range-input fg-scale-range" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateScale()">
                     </div>
-                    <div class="scale-control" id="angleBox">
-                        <div class="slider-header">
-                            <strong>角度: <span id="angleValue">0°</span></strong>
-                            <button type="button" class="btn-mini" onclick="resetFgAngle()">0°に戻す</button>
+                    <div class="scale-control fg-angle-control" id="angleBox">
+                        <div class="slider-header fg-angle-header">
+                            <strong class="slider-title fg-angle-title">角度: <span id="angleValue" class="slider-value fg-angle-value">0°</span></strong>
+                            <button type="button" class="btn-mini btn-reset-angle" id="btnResetFgAngle" onclick="resetFgAngle()">0°に戻す</button>
                         </div>
-                        <input type="range" id="fgAngle" min="-180" max="180" step="1" value="0" oninput="updateAngle()">
+                        <input type="range" id="fgAngle" class="range-input fg-angle-range" min="-180" max="180" step="1" value="0" oninput="updateAngle()">
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- タブB: テキストを重ねる -->
-        <div class="section-box tab-content" id="tabText" style="display: none;">
+        <div class="section-box tab-content tab-content-text is-hidden" id="tabText">
             <div class="text-input-row">
-                <textarea id="overlayText" rows="2" placeholder="ここに入力した文字がキャンバスに重なります（改行対応）" oninput="updateTextLayer()"></textarea>
-                <button type="button" class="btn-clear-text" onclick="clearTextLayer()">消去</button>
+                <textarea id="overlayText" class="text-area-input overlay-textarea" rows="2" placeholder="ここに入力した文字がキャンバスに重なります（改行対応）" oninput="updateTextLayer()"></textarea>
+                <button type="button" class="btn-clear-text" id="btnClearText" onclick="clearTextLayer()">消去</button>
             </div>
 
             <div class="text-style-row">
-                <label class="inline-label">文字色:<input type="color" id="textColor" value="#ffffff" onchange="updateTextLayer()"></label>
-                <label class="inline-label"><input type="checkbox" id="textOutline" checked onchange="updateTextLayer()">フチ:<input type="color" id="outlineColor" value="#000000" onchange="updateTextLayer()"></label>
-                <label class="inline-label"><input type="checkbox" id="textBold" checked onchange="updateTextLayer()">太字</label>
-                <label class="inline-label"><input type="checkbox" id="textVertical" onchange="updateTextLayer()">縦書き</label>
+                <label class="inline-label text-color-label" for="textColor">
+                    <span class="label-text">文字色:</span>
+                    <input type="color" id="textColor" class="color-input text-color-input" value="#ffffff" onchange="updateTextLayer()">
+                </label>
+                <label class="inline-label text-outline-label" for="textOutline">
+                    <input type="checkbox" id="textOutline" class="checkbox-input text-outline-checkbox" checked onchange="updateTextLayer()">
+                    <span class="label-text">フチ:</span>
+                    <input type="color" id="outlineColor" class="color-input outline-color-input" value="#000000" onchange="updateTextLayer()">
+                </label>
+                <label class="inline-label text-bold-label" for="textBold">
+                    <input type="checkbox" id="textBold" class="checkbox-input text-bold-checkbox" checked onchange="updateTextLayer()">
+                    <span class="label-text">太字</span>
+                </label>
+                <label class="inline-label text-vertical-label" for="textVertical">
+                    <input type="checkbox" id="textVertical" class="checkbox-input text-vertical-checkbox" onchange="updateTextLayer()">
+                    <span class="label-text">縦書き</span>
+                </label>
             </div>
 
-            <div class="select-row" style="margin-top: 6px;">
-                <span class="inline-label">背景枠:</span>
-                <select id="textBoxBg" onchange="updateTextLayer()">
-                    <option value="none">なし（透明）</option>
-                    <option value="rgba(0,0,0,0.6)">半透明の黒ボックス</option>
-                    <option value="rgba(255,255,255,0.75)">半透明の白ボックス</option>
-                    <option value="#000000">黒塗りボックス</option>
-                    <option value="#ffffff">白塗りボックス</option>
+            <div class="select-row text-bg-select-row">
+                <span class="inline-label select-label text-bg-label">背景枠:</span>
+                <select id="textBoxBg" class="select-input text-bg-select" onchange="updateTextLayer()">
+                    <option value="none" class="select-option text-bg-option-none">なし（透明）</option>
+                    <option value="rgba(0,0,0,0.6)" class="select-option text-bg-option-dark">半透明の黒ボックス</option>
+                    <option value="rgba(255,255,255,0.75)" class="select-option text-bg-option-light">半透明の白ボックス</option>
+                    <option value="#000000" class="select-option text-bg-option-black">黒塗りボックス</option>
+                    <option value="#ffffff" class="select-option text-bg-option-white">白塗りボックス</option>
                 </select>
             </div>
 
-            <div class="controls">
-                <div class="pad-column">
-                    <div class="d-pad">
-                        <button type="button" class="up" onclick="moveActive(0, -10)">↑</button>
-                        <button type="button" class="left" onclick="moveActive(-10, 0)">←</button>
-                        <button type="button" class="down" onclick="moveActive(0, 10)">↓</button>
-                        <button type="button" class="right" onclick="moveActive(10, 0)">→</button>
+            <div class="controls text-controls">
+                <div class="pad-column text-pad-column">
+                    <div class="d-pad text-d-pad">
+                        <button type="button" class="d-pad-btn up text-btn-up" onclick="moveActive(0, -10)">↑</button>
+                        <button type="button" class="d-pad-btn left text-btn-left" onclick="moveActive(-10, 0)">←</button>
+                        <button type="button" class="d-pad-btn down text-btn-down" onclick="moveActive(0, 10)">↓</button>
+                        <button type="button" class="d-pad-btn right text-btn-right" onclick="moveActive(10, 0)">→</button>
                     </div>
-                    <div class="angle-step-row">
-                        <button type="button" onclick="stepAngle(-1)">↶ -1°</button>
-                        <button type="button" onclick="stepAngle(1)">↷ +1°</button>
+                    <div class="angle-step-row text-angle-step-row">
+                        <button type="button" class="angle-step-btn angle-minus-btn text-angle-minus" onclick="stepAngle(-1)">↶ -1°</button>
+                        <button type="button" class="angle-step-btn angle-plus-btn text-angle-plus" onclick="stepAngle(1)">↷ +1°</button>
                     </div>
                 </div>
-                <div class="sliders-stack">
-                    <div class="scale-control" id="textSizeBox">
-                        <div class="slider-header">
-                            <strong>文字サイズ: <span id="textSizeValue">40px</span></strong>
+                <div class="sliders-stack text-sliders-stack">
+                    <div class="scale-control text-size-control" id="textSizeBox">
+                        <div class="slider-header text-size-header">
+                            <strong class="slider-title text-size-title">文字サイズ: <span id="textSizeValue" class="slider-value text-size-value">40px</span></strong>
                         </div>
-                        <input type="range" id="textSize" min="12" max="160" step="2" value="40" oninput="updateTextLayer()">
+                        <input type="range" id="textSize" class="range-input text-size-range" min="12" max="160" step="2" value="40" oninput="updateTextLayer()">
                     </div>
-                    <div class="scale-control" id="textAngleBox">
-                        <div class="slider-header">
-                            <strong>角度: <span id="textAngleValue">0°</span></strong>
-                            <button type="button" class="btn-mini" onclick="resetTextAngle()">0°に戻す</button>
+                    <div class="scale-control text-angle-control" id="textAngleBox">
+                        <div class="slider-header text-angle-header">
+                            <strong class="slider-title text-angle-title">角度: <span id="textAngleValue" class="slider-value text-angle-value">0°</span></strong>
+                            <button type="button" class="btn-mini btn-reset-angle" id="btnResetTextAngle" onclick="resetTextAngle()">0°に戻す</button>
                         </div>
-                        <input type="range" id="textAngle" min="-180" max="180" step="1" value="0" oninput="updateTextLayer()">
+                        <input type="range" id="textAngle" class="range-input text-angle-range" min="-180" max="180" step="1" value="0" oninput="updateTextLayer()">
                     </div>
                 </div>
             </div>
@@ -160,12 +188,16 @@
     </div>
 
     <!-- ③ キャンバス表示 ＆ 新しい背景に設定・保存ボタン（常時表示） -->
-    <div class="section-footer">
-        <p class="guide-text" id="dragGuideText">※キャンバス上のドラッグ／スワイプで「重ねた画像」を移動できます。</p>
-        <canvas id="canvas"></canvas>
+    <div class="section-footer preview-footer-section" id="sectionFooter">
+        <p class="guide-text canvas-guide-text" id="dragGuideText">※キャンバス上のドラッグ／スワイプで「重ねた画像」を移動できます。</p>
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="canvas" class="main-canvas"></canvas>
+        </div>
 
-        <button class="btn-flatten" onclick="setAsNewBackground()">現在の状態を新しい背景に設定する（結合）</button>
-        <button class="btn-save" onclick="saveImage()">合成画像を保存する</button>
+        <div class="footer-actions" id="footerActions">
+            <button type="button" class="btn-flatten action-btn-flatten" id="btnFlatten" onclick="setAsNewBackground()">現在の状態を新しい背景に設定する（結合）</button>
+            <button type="button" class="btn-save action-btn-save" id="btnSave" onclick="saveImage()">合成画像を保存する</button>
+        </div>
     </div>
 </div>
 
@@ -174,19 +206,20 @@
     const ctx = canvas.getContext('2d');
     const fallbackPasteArea = document.getElementById('fallbackPasteArea');
     const statusMsg = document.getElementById('statusMsg');
-    const defaultFallbackText = '<span style="pointer-events: none;">👆 ここを長押しして「ペースト」を選択</span>';
+    const defaultFallbackText = '<span class="fallback-paste-placeholder">👆 ここを長押しして「ペースト」を選択</span>';
     
-    let activeTab = 'image'; // 'image' または 'text'
+    let activeTab = 'image';
 
     // 背景と画像レイヤーの変数（fgX, fgY は画像の中心座標）
     let bgImage = null;
+    let currentBgObjectUrl = null; // メモリ解放管理用のBlob URL
     let fgImage = null;
     let customWidth = 800;
     let customHeight = 600;
     let fgX = 400, fgY = 300;
     let fgScale = 1.0;
-    let fgAngle = 0; // 度数（-180〜180）
-    let fgFlipX = false; // 左右反転
+    let fgAngle = 0;
+    let fgFlipX = false;
 
     // テキストレイヤーの変数（textX, textY はテキストの中心座標）
     let textX = 400, textY = 300;
@@ -208,16 +241,27 @@
         }
     });
 
+    // ステータスメッセージのクラス制御ヘルパー
+    function setStatusMessage(text, type) {
+        statusMsg.classList.remove('is-success', 'is-error', 'is-info');
+        if (type === 'success') statusMsg.classList.add('is-success');
+        else if (type === 'error') statusMsg.classList.add('is-error');
+        else statusMsg.classList.add('is-info');
+        statusMsg.innerText = text;
+    }
+
     // タブ切り替え処理
     function switchTab(tabName) {
         activeTab = tabName;
-        document.getElementById('tabBtnImage').classList.toggle('active', tabName === 'image');
-        document.getElementById('tabBtnText').classList.toggle('active', tabName === 'text');
-        document.getElementById('tabImage').style.display = (tabName === 'image') ? 'block' : 'none';
-        document.getElementById('tabText').style.display = (tabName === 'text') ? 'block' : 'none';
+        const isImg = (tabName === 'image');
+
+        document.getElementById('tabBtnImage').classList.toggle('is-active', isImg);
+        document.getElementById('tabBtnText').classList.toggle('is-active', !isImg);
+        document.getElementById('tabImage').classList.toggle('is-hidden', !isImg);
+        document.getElementById('tabText').classList.toggle('is-hidden', isImg);
 
         const guide = document.getElementById('dragGuideText');
-        if (tabName === 'image') {
+        if (isImg) {
             guide.innerText = '※キャンバス上のドラッグ／スワイプで「重ねた画像」を移動できます。';
         } else {
             guide.innerText = '※キャンバス上のドラッグ／スワイプで「テキスト」を移動できます。';
@@ -259,7 +303,6 @@
         draw();
     }
 
-    // 角度を1度ずつ増減させる関数（画像・テキスト共通）
     function stepAngle(delta) {
         if (activeTab === 'image') {
             fgAngle = Math.max(-180, Math.min(180, fgAngle + delta));
@@ -275,6 +318,7 @@
 
     function toggleFlipFg() {
         fgFlipX = !fgFlipX;
+        document.getElementById('btnFlipFg').classList.toggle('is-flipped', fgFlipX);
         draw();
     }
 
@@ -305,17 +349,14 @@
         draw();
     }
 
-    // 縦書き時に90度回転させる記号の判定（長音符やカッコ類）
     function isVerticalRotChar(ch) {
         return 'ーｰ～〜…‥｜|()（）[]［］{}｛｝「」『』【】〈〉《》〔〕＜＞<>-－＝='.includes(ch);
     }
 
-    // 縦書き時に右上へ位置補正する小書き文字・句読点の判定
     function isVerticalSmallOrPunct(ch) {
         return '、。，．っゃゅょぁぃぅぇぉッャュョァィゥェォヵヶ'.includes(ch);
     }
 
-    // 描画処理（背景 ＋ 重ねる画像 ＋ テキストボックス）
     function draw() {
         canvas.width = customWidth;
         canvas.height = customHeight;
@@ -350,7 +391,7 @@
             ctx.restore();
         }
 
-        // 3. テキストボックスの描画（横書き・縦書き対応）
+        // 3. テキストボックスの描画
         const rawText = document.getElementById('overlayText').value;
         if (rawText && rawText.trim().length > 0) {
             const lines = rawText.split('\n');
@@ -373,7 +414,6 @@
             const strokeW = Math.max(2, Math.round(fontSize * 0.12));
 
             if (!isVertical) {
-                // --- 横書き描画 ---
                 const lineHeight = fontSize * 1.25;
                 const totalHeight = lines.length * lineHeight;
 
@@ -405,7 +445,6 @@
                     ctx.fillText(lines[i], 0, ly);
                 }
             } else {
-                // --- 縦書き描画（右から左へ改行展開） ---
                 const charStepY = fontSize * 1.08;
                 const colStepX = fontSize * 1.35;
                 const numCols = lines.length;
@@ -428,7 +467,6 @@
                     ctx.fillRect(-boxW / 2, -boxH / 2, boxW, boxH);
                 }
 
-                // 1行目は一番右の列、改行ごとに左の列へ進む
                 const startX = (totalWidth / 2) - (colStepX / 2);
                 const startY = -(totalHeight / 2) + (charStepY / 2);
 
@@ -464,7 +502,6 @@
         }
     }
 
-    // 十字キーでの移動（開いているタブの対象を動かす）
     function moveActive(dx, dy) {
         if (activeTab === 'image') {
             fgX += dx;
@@ -516,10 +553,18 @@
         outCanvas.height = cropH;
         outCanvas.getContext('2d').drawImage(temp, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
 
+        // 一時キャンバスのメモリを即座に解放
+        temp.width = 1;
+        temp.height = 1;
+
         return { canvas: outCanvas, isCutout: hasTransparentPixel };
     }
 
     function setForegroundResult(result) {
+        if (fgImage && fgImage !== result.canvas) {
+            fgImage.width = 1;
+            fgImage.height = 1;
+        }
         fgImage = result.canvas;
         document.getElementById('fgScale').value = 1.0;
         fgScale = 1.0;
@@ -529,40 +574,45 @@
         fgAngle = 0;
         document.getElementById('angleValue').innerText = '0°';
         fgFlipX = false;
+        document.getElementById('btnFlipFg').classList.remove('is-flipped');
 
         fgX = customWidth / 2;
         fgY = customHeight / 2;
         
-        fallbackPasteArea.style.display = 'none';
+        fallbackPasteArea.classList.add('is-hidden');
         document.getElementById('fgFileName').innerText = "ペースト済";
 
         if (result.isCutout) {
-            statusMsg.style.color = "#28a745";
-            statusMsg.innerText = `✅ 切り抜き画像（透過あり）を配置しました (${fgImage.width}×${fgImage.height}px)`;
+            setStatusMessage(`✅ 切り抜き画像（透過あり）を配置しました (${fgImage.width}×${fgImage.height}px)`, 'success');
         } else {
-            statusMsg.style.color = "#d9534f";
-            statusMsg.innerText = `⚠️ 透過のない画像が貼られました（切り抜きコピーは光った後に指を離してコピー）`;
+            setStatusMessage(`⚠️ 透過のない画像が貼られました（切り抜きコピーは光った後に指を離してコピー）`, 'error');
         }
         draw();
     }
 
+    // DataURLを使わずメモリ負荷の低いObjectURLでImageを生成する
     function blobToImage(blob) {
         return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.onerror = () => resolve(null);
-                img.src = evt.target.result;
+            if (!blob) {
+                resolve(null);
+                return;
+            }
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve(img);
             };
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(blob);
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                resolve(null);
+            };
+            img.src = url;
         });
     }
 
     async function handleButtonPaste() {
-        statusMsg.style.color = "#0056b3";
-        statusMsg.innerText = "⏳ クリップボードを読み取り中...";
+        setStatusMessage("⏳ クリップボードを読み取り中...", 'info');
 
         try {
             if (!navigator.clipboard || !navigator.clipboard.read) {
@@ -641,9 +691,8 @@
     }
 
     function showFallbackPaste(msg) {
-        statusMsg.style.color = "#d9534f";
-        statusMsg.innerText = msg;
-        fallbackPasteArea.style.display = 'flex';
+        setStatusMessage(msg, 'error');
+        fallbackPasteArea.classList.remove('is-hidden');
         fallbackPasteArea.innerHTML = defaultFallbackText;
     }
 
@@ -737,13 +786,19 @@
         }
     });
 
-    // ファイル選択（背景画像）
-    document.getElementById('bgInput').addEventListener('change', async function(e) {
+    // ファイル選択（背景画像：ObjectURL管理で省メモリ化）
+    document.getElementById('bgInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
         document.getElementById('bgFileName').innerText = file.name;
-        const img = await blobToImage(file);
-        if (img) {
+        
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = function() {
+            if (currentBgObjectUrl) {
+                URL.revokeObjectURL(currentBgObjectUrl);
+            }
+            currentBgObjectUrl = url;
             bgImage = img;
             document.getElementById('canvasW').value = img.width;
             document.getElementById('canvasH').value = img.height;
@@ -753,10 +808,11 @@
             textY = customHeight / 2;
             isTextInitialized = true;
             draw();
-        }
+        };
+        img.src = url;
     });
 
-    // ドラッグ＆スワイプ移動（開いているタブの対象を移動）
+    // ドラッグ＆スワイプ移動
     function getCanvasPos(e) {
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -809,41 +865,69 @@
     canvas.addEventListener('touchmove', onPointerMove, {passive: false});
     canvas.addEventListener('touchend', onPointerUp);
 
-    // 現在の状態を新しい背景に結合
+    // 【クラッシュ防止版】現在の状態を新しい背景に結合（Blob方式＋メモリ解放）
     function setAsNewBackground() {
         const hasText = document.getElementById('overlayText').value.trim().length > 0;
         if (!bgImage && !fgImage && !hasText) {
             alert("画像やテキストが配置されていません。");
             return;
         }
-        const dataURL = canvas.toDataURL('image/png');
-        const img = new Image();
-        img.onload = function() {
-            bgImage = img;
-            fgImage = null;
-            document.getElementById('fgInput').value = "";
-            document.getElementById('fgFileName').innerText = "未選択";
-            document.getElementById('overlayText').value = "";
-            resetFgAngle();
-            resetTextAngle();
-            document.getElementById('bgFileName').innerText = "結合画像";
-            statusMsg.style.color = "#0056b3";
-            statusMsg.innerText = "背景に結合しました。続けて次の画像やテキストを重ねられます。";
-            draw();
-        };
-        img.src = dataURL;
+        
+        canvas.toBlob(function(blob) {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = function() {
+                if (currentBgObjectUrl) {
+                    URL.revokeObjectURL(currentBgObjectUrl);
+                }
+                currentBgObjectUrl = url;
+                bgImage = img;
+                
+                if (fgImage) {
+                    fgImage.width = 1;
+                    fgImage.height = 1;
+                    fgImage = null;
+                }
+                
+                document.getElementById('fgInput').value = "";
+                document.getElementById('fgFileName').innerText = "未選択";
+                document.getElementById('overlayText').value = "";
+                resetFgAngle();
+                resetTextAngle();
+                fgFlipX = false;
+                document.getElementById('btnFlipFg').classList.remove('is-flipped');
+                document.getElementById('bgFileName').innerText = "結合画像";
+                setStatusMessage("背景に結合しました。続けて次の画像やテキストを重ねられます。", 'info');
+                draw();
+            };
+            img.src = url;
+        }, 'image/png');
     }
 
+    // 【クラッシュ防止版】合成画像の保存（Blobダウンロード方式＋メモリ解放）
     function saveImage() {
         const hasText = document.getElementById('overlayText').value.trim().length > 0;
         if (!bgImage && !fgImage && !hasText) { 
             alert("画像やテキストが読み込まれていません。"); 
             return; 
         }
-        const link = document.createElement('a');
-        link.download = 'merged_image.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        
+        canvas.toBlob(function(blob) {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.className = 'download-trigger-link';
+            link.download = 'merged_image.png';
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 3000);
+        }, 'image/png');
     }
 </script>
 
