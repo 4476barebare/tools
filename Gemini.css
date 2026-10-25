@@ -1,0 +1,697 @@
+/*
+ * Entry No.2: Gemini
+ * Model: Gemini 1.5 Flash
+ * Theme: "Soft Material & Clear UX"
+ * 
+ * ==========================================================================
+ * 基本リセット・ページ全体固定（横ブレ・バウンス防止）
+ * ========================================================================== */
+:root {
+    /* カラーパレット */
+    --color-primary: #3b82f6;
+    --color-primary-active: #2563eb;
+    --color-success: #10b981;
+    --color-success-active: #059669;
+    --color-info: #0ea5e9;
+    --color-info-active: #0284c7;
+    --color-danger: #ef4444;
+    --color-danger-active: #dc2828;
+    --color-warning: #f59e0b;
+    --color-warning-active: #d97706;
+    
+    /* 背景色とテキスト色 */
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-section: #f1f5f9;
+    --bg-tab-inactive: #e2e8f0;
+    
+    --text-main: #0f172a;
+    --text-sub: #475569;
+    
+    --border-color: #cbd5e1;
+    
+    /* 角丸とシャドウ */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.04);
+    
+    /* アニメーション */
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-html,
+.app-body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+    user-select: none;
+    -webkit-user-select: none;
+    line-height: 1.5;
+}
+
+.app-body {
+    padding: 16px 12px;
+}
+
+/* 状態管理用ユーティリティクラス */
+.is-hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   メインコンテナ・タイトル
+   ========================================================================== */
+.container.app-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    padding: 24px 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.app-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0 0 20px 0;
+    text-align: center;
+    color: var(--text-main);
+    letter-spacing: -0.03em;
+}
+
+/* ==========================================================================
+   セクション共通ボックス（①背景設定 / ②タブ内容 / ③フッター）
+   ========================================================================== */
+.section-box {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: var(--bg-section);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.section-footer.preview-footer-section {
+    margin-top: 16px;
+    padding: 20px;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   ヘッダー行・ファイル選択ボタン固定レイアウト
+   ========================================================================== */
+.header-line {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    margin-bottom: 12px;
+    padding-right: 170px;
+}
+
+.sec-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--text-main);
+}
+
+.file-action-area {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 165px;
+}
+
+.file-status {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    max-width: 65px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.file-btn-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.file-btn-label:active {
+    background: var(--bg-section);
+    transform: scale(0.97);
+}
+
+.file-input {
+    display: none;
+}
+
+/* ==========================================================================
+   ① 背景キャンバス設定：サイズ入力行・配置セレクト行
+   ========================================================================== */
+.size-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    width: 100%;
+    flex-wrap: nowrap;
+}
+
+.inline-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-sub);
+}
+
+.number-input {
+    width: 65px;
+    padding: 6px 8px;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    text-align: right;
+    background: var(--bg-card);
+    color: var(--text-main);
+    transition: var(--transition);
+}
+
+.number-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-small.btn-apply-size {
+    margin-left: auto;
+    padding: 8px 12px;
+    background: var(--text-sub);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.btn-small.btn-apply-size:active {
+    background: var(--text-main);
+    transform: scale(0.95);
+}
+
+.select-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.text-bg-select-row {
+    margin-top: 12px;
+}
+
+.select-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+.select-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+/* ==========================================================================
+   ② タブ切り替えナビゲーション
+   ========================================================================== */
+.tab-wrapper.editor-tab-wrapper {
+    margin-bottom: 16px;
+}
+
+.tab-header.editor-tab-header {
+    display: flex;
+    gap: 0;
+    background: var(--bg-tab-inactive);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    padding: 6px 6px 0 6px;
+}
+
+.tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    background: transparent;
+    color: var(--text-sub);
+    cursor: pointer;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.tab-btn.is-active {
+    background: var(--bg-section);
+    color: var(--color-primary);
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.02);
+}
+
+.tab-content {
+    margin-bottom: 0;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    border-top: none;
+}
+
+/* ==========================================================================
+   タブA：画像ペーストボタン・予備エリア・ステータスメッセージ
+   ========================================================================== */
+.btn-paste.fg-paste-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    margin-top: 8px;
+    background: var(--color-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+    transition: var(--transition);
+}
+
+.btn-paste.fg-paste-btn:active {
+    background: var(--color-primary-active);
+    transform: translateY(2px);
+    box-shadow: 0 2px 3px rgba(59, 130, 246, 0.25);
+}
+
+.fallback-paste-area {
+    margin-top: 10px;
+    width: 100%;
+    min-height: 50px;
+    border: 2px dashed var(--color-danger);
+    background: #fef2f2;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-danger);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: text;
+    outline: none;
+    text-align: center;
+    padding: 10px;
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.fallback-paste-placeholder {
+    pointer-events: none;
+}
+
+.status-msg {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+}
+.status-msg.is-info { color: var(--color-info); }
+.status-msg.is-success { color: var(--color-success); }
+.status-msg.is-error { color: var(--color-danger); }
+
+/* ==========================================================================
+   タブB：テキスト入力・文字装飾コントロール
+   ========================================================================== */
+.text-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    margin-bottom: 12px;
+}
+
+.text-area-input.overlay-textarea {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    resize: none;
+    font-family: inherit;
+    background: var(--bg-card);
+    transition: var(--transition);
+    user-select: text;
+    -webkit-user-select: text;
+}
+.text-area-input.overlay-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-clear-text {
+    padding: 0 16px;
+    background: var(--bg-tab-inactive);
+    color: var(--text-sub);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.btn-clear-text:active {
+    background: var(--border-color);
+    transform: scale(0.95);
+}
+
+.text-style-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: nowrap;
+    background: var(--bg-card);
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.color-input {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    overflow: hidden;
+}
+/* カラーピッカーの中身を丸くする */
+.color-input::-webkit-color-swatch-wrapper { padding: 0; }
+.color-input::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+.checkbox-input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+/* ==========================================================================
+   共通操作パネル（矢印キー・角度ボタン・スライダー群）
+   ========================================================================== */
+.controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.pad-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.d-pad {
+    display: grid;
+    grid-template-columns: 40px 40px 40px;
+    gap: 4px;
+    text-align: center;
+}
+
+.d-pad-btn {
+    padding: 10px 0;
+    cursor: pointer;
+    border: none;
+    background: #dbeafe;
+    border-radius: var(--radius-sm);
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.d-pad-btn:active {
+    background: #bfdbfe;
+    transform: scale(0.9);
+}
+
+.d-pad-btn.up { grid-column: 2; border-radius: var(--radius-sm) var(--radius-sm) 4px 4px; }
+.d-pad-btn.left { grid-column: 1; border-radius: var(--radius-sm) 4px 4px var(--radius-sm); }
+.d-pad-btn.down { grid-column: 2; grid-row: 2; border-radius: 4px 4px var(--radius-sm) var(--radius-sm); }
+.d-pad-btn.right { grid-column: 3; border-radius: 4px var(--radius-sm) var(--radius-sm) 4px; }
+
+.angle-step-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    width: 100%;
+}
+
+.angle-step-btn {
+    padding: 8px 0;
+    cursor: pointer;
+    border: none;
+    background: #fef3c7;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--color-warning-active);
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.angle-step-btn:active {
+    background: #fde68a;
+    transform: scale(0.95);
+}
+
+.sliders-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.scale-control {
+    background: var(--bg-card);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    font-size: 0.8rem;
+    touch-action: none;
+    box-shadow: var(--shadow-inner);
+}
+
+.slider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.slider-title {
+    color: var(--text-main);
+}
+
+.slider-value {
+    color: var(--color-primary);
+}
+
+.btn-mini {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: var(--bg-section);
+    border: 1px solid var(--border-color);
+    color: var(--text-sub);
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.btn-mini:active,
+.btn-mini.is-flipped {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+/* ネイティブ風のカスタムスライダー */
+.range-input {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    outline: none;
+    margin: 8px 0;
+}
+
+.range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.1s;
+}
+
+.range-input::-webkit-slider-thumb:active {
+    transform: scale(1.25);
+    background: var(--color-primary-active);
+}
+
+/* ==========================================================================
+   ③ キャンバス表示・結合＆保存アクションボタン
+   ========================================================================== */
+.guide-text.canvas-guide-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+
+.canvas-wrapper {
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+}
+
+.main-canvas {
+    border: none;
+    max-width: 100%;
+    height: auto;
+    touch-action: none;
+    cursor: move;
+    display: block;
+    margin: 0 auto;
+    background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%, transparent 75%, #e2e8f0 75%, #e2e8f0), linear-gradient(45deg, #e2e8f0 25%, transparent 25%, transparent 75%, #e2e8f0 75%, #e2e8f0);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+}
+
+.footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.btn-flatten.action-btn-flatten {
+    background: var(--color-info);
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(14, 165, 233, 0.25);
+    transition: var(--transition);
+}
+
+.btn-flatten.action-btn-flatten:active {
+    background: var(--color-info-active);
+    transform: translateY(2px);
+    box-shadow: 0 2px 3px rgba(14, 165, 233, 0.25);
+}
+
+.btn-save.action-btn-save {
+    background: var(--color-success);
+    color: #ffffff;
+    border: none;
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 1.05rem;
+    font-weight: 800;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+    transition: var(--transition);
+}
+
+.btn-save.action-btn-save:active {
+    background: var(--color-success-active);
+    transform: translateY(2px);
+    box-shadow: 0 2px 3px rgba(16, 185, 129, 0.25);
+}
