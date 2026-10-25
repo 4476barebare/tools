@@ -3,6 +3,11 @@
    使用モデル : Claude Sonnet 5.5 (Anthropic)
    ファイル名 : style_claude-sonnet-5-5.css
    差し替え   : 原本 style.css と置き換えるだけで動作（HTML / JS は無変更）
+   改訂       : リテイク1回目（実機確認を受けて調整）
+                ・ヘッダーのCSS切替UIが右にはみ出す問題を修正（2段組に）
+                ・タブのラベル折り返しを解消（アイコン上・文字下）
+                ・十字キーと角度ボタンを横並びにして縦の無駄を削減
+                ・サイズ適用ボタン／背景配置セレクトを全幅表示に
 
    テーマ「ステッカー工房」
    このツールの仕事は「切り抜いたものを貼る」こと。
@@ -117,6 +122,62 @@ button {
     border-radius: 999px;
     box-shadow: var(--shadow);
     transform: rotate(-1.5deg);
+}
+
+/* ヘッダー：タイトル＋CSS切替UI
+   index.html内の<style>と詳細度が同じだと負けるため、一段強く指定して上書き */
+.app-container .app-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.app-container .app-header-bar .app-title {
+    align-self: center;
+    margin: 2px 0 0;
+    padding: 6px 18px;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.app-container .css-switcher-area {
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    background: var(--sky);
+    border: 2px dashed var(--ink);
+    border-radius: var(--radius);
+}
+
+.app-container .css-theme-select {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    height: var(--tap);
+    padding: 0 34px 0 12px;
+    font-size: 16px;
+    color: var(--ink);
+    background-color: var(--paper);
+    border: var(--bw) solid var(--ink);
+    border-radius: 12px;
+}
+
+.app-container .btn-cycle-css {
+    min-height: var(--tap);
+    padding: 0 14px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--paper);
+    background: var(--ink);
+    border: var(--bw) solid var(--ink);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.app-container .btn-cycle-css:active {
+    background: var(--ink);
 }
 
 /* ==========================================================================
@@ -299,7 +360,7 @@ button {
 }
 
 .btn-small.btn-apply-size {
-    margin-left: auto;
+    flex: 1 0 100%;
     min-height: var(--tap);
     padding: 0 16px;
     font-size: 0.85rem;
@@ -314,7 +375,8 @@ button {
 .select-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
     width: 100%;
 }
 
@@ -323,7 +385,7 @@ button {
 }
 
 .select-label {
-    flex-shrink: 0;
+    flex: 1 0 100%;
 }
 
 .select-input {
@@ -364,13 +426,14 @@ button {
 .tab-btn {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-height: 48px;
+    gap: 2px;
+    min-height: 58px;
     margin-bottom: calc(var(--bw) * -1);
     padding: 8px 6px;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 800;
     color: var(--ink-soft);
     text-align: center;
@@ -392,6 +455,15 @@ button {
 
 .tab-btn-text.is-active {
     background: var(--pink);
+}
+
+.tab-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.tab-label {
+    white-space: nowrap;
 }
 
 .tab-content {
@@ -629,9 +701,11 @@ button {
 
 .pad-column {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
 }
 
 .d-pad {
@@ -662,15 +736,15 @@ button {
 
 .angle-step-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    width: 100%;
+    grid-template-columns: minmax(0, 112px);
+    grid-auto-rows: var(--tap);
+    gap: 4px;
 }
 
 .angle-step-btn {
-    min-height: 40px;
+    min-height: var(--tap);
     padding: 0 4px;
-    font-size: 0.78rem;
+    font-size: 0.88rem;
     font-weight: 800;
     white-space: nowrap;
     color: var(--ink);
@@ -682,7 +756,7 @@ button {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    flex: 1 1 160px;
+    flex: 1 1 100%;
     min-width: 0;
 }
 
