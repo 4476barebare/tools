@@ -1,8 +1,8 @@
 /*
- * CSS Design Competition — Round 1 / Retake 1
+ * CSS Design Competition — Final Submission
  * Model: GPT-6 (ChatGPT)
  * Generated: 2026-10-25
- * Revision: Retake 1 — mobile header wrapping and reduced control-panel spacing
+ * Revision: Final — responsive header and refined mobile control density
  * Design concept: Precision Studio — a calm, editorial image-editing workspace.
  * UX priorities: clear hierarchy, tactile controls, visible states, responsive canvas.
  */
@@ -1189,5 +1189,173 @@ textarea:focus-visible,
 
     .section-footer.preview-footer-section {
         padding: 9px;
+    }
+}
+
+/*
+ * Final polish — Retake 2
+ * Model: GPT-6 (ChatGPT)
+ * Generated: 2026-10-25
+ * Design concept: Precision Studio — retain the established visual language while reducing mobile scroll length.
+ * Scope: mobile spacing and control density only; no HTML or JavaScript changes.
+ */
+@media (max-width: 640px) {
+    .container.app-container {
+        padding: 12px;
+    }
+
+    .app-title {
+        margin-bottom: 12px;
+    }
+
+    .section-box {
+        margin-bottom: 11px;
+        padding: 10px;
+    }
+
+    .section-footer.preview-footer-section {
+        margin-top: 11px;
+        padding: 10px;
+    }
+
+    .header-line {
+        gap: 7px;
+        margin-bottom: 9px;
+    }
+
+    .file-action-area {
+        gap: 6px;
+    }
+
+    .file-btn-label {
+        min-height: 40px;
+        padding: 7px 10px;
+    }
+
+    .size-row {
+        gap: 6px;
+        margin-bottom: 7px;
+    }
+
+    .number-input {
+        padding: 5px 6px;
+    }
+
+    .btn-small.btn-apply-size {
+        min-height: 46px;
+        padding: 10px 12px;
+    }
+
+    .select-row {
+        gap: 5px;
+        margin-top: 7px;
+    }
+
+    .tab-header.editor-tab-header {
+        margin-bottom: 7px;
+        padding-bottom: 6px;
+    }
+
+    .tab-btn {
+        min-height: 50px;
+        padding: 7px 5px;
+    }
+
+    .controls {
+        gap: 8px;
+        margin-top: 11px;
+        padding-top: 11px;
+    }
+
+    .pad-column {
+        gap: 6px;
+    }
+
+    .d-pad-btn {
+        min-height: 40px;
+    }
+
+    .angle-step-btn {
+        min-height: 40px;
+    }
+
+    .sliders-stack {
+        gap: 7px;
+    }
+
+    .scale-control {
+        padding: 8px 9px 7px;
+    }
+
+    .slider-header {
+        gap: 6px;
+        margin-bottom: 5px;
+    }
+
+    .range-input {
+        margin-top: 3px;
+        margin-bottom: 2px;
+    }
+
+    .btn-mini {
+        min-height: 34px;
+    }
+
+    .btn-paste.fg-paste-btn {
+        min-height: 54px;
+        padding: 12px 10px;
+    }
+
+    .canvas-guide-text {
+        margin-bottom: 9px;
+    }
+
+    .canvas-wrapper {
+        padding: 7px;
+    }
+
+    .footer-actions {
+        gap: 8px;
+        margin-top: 11px;
+    }
+
+    .btn-flatten.action-btn-flatten,
+    .btn-save.action-btn-save {
+        min-height: 48px;
+        padding: 11px 12px;
+    }
+}
+
+@media (max-width: 380px) {
+    .container.app-container {
+        padding: 10px;
+    }
+
+    .section-box,
+    .section-footer.preview-footer-section {
+        padding: 9px;
+    }
+
+    .file-btn-label {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+
+    .controls {
+        gap: 7px;
+    }
+
+    .pad-column {
+        flex-basis: 96px;
+    }
+
+    .scale-control {
+        padding: 7px 8px 6px;
+    }
+
+    .btn-flatten.action-btn-flatten,
+    .btn-save.action-btn-save {
+        min-height: 46px;
+        font-size: .9rem;
     }
 }
