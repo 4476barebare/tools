@@ -5,6 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>画像重ね合わせツール</title>
     <link rel="stylesheet" href="style.css" id="themeStylesheet">
+    <style>
+        /* 全CSSファイル共通：ヘッダー＆CSS切り替えUI用スタイル */
+        .app-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .app-header-bar .app-title {
+            font-size: 1.05rem;
+            margin: 0;
+            white-space: nowrap;
+            text-align: left;
+        }
+        .css-switcher-area {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .css-theme-select {
+            width: auto;
+            max-width: 135px;
+            padding: 4px 6px;
+            font-size: 0.75rem;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            background: #ffffff;
+            color: #333333;
+        }
+        .btn-cycle-css {
+            margin: 0;
+            padding: 5px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: #6c757d;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-cycle-css:active {
+            background: #5a6268;
+        }
+    </style>
 </head>
 <body class="app-body">
 
@@ -211,7 +259,7 @@
     // =========================================================
     // CSSファイル切り替え機能（ここに用意したCSSファイルを追加できます）
     // =========================================================
-    const cssFileList = [
+const cssFileList = [
         { name: 'デフォルト (style.css)', file: 'style.css' },
         { name: 'chatGPT GPT-6', file: 'ChatGPT.css' },
         { name: 'Gemini 1.5 Pro', file: 'Gemini.css' },
