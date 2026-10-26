@@ -13,7 +13,10 @@
                 ・黒ボタンが黒い影と同化していた問題を、青ボタンで解消
                 ・文字装飾の4項目を2×2に整理し、入力欄の説明文切れを解消
                 ・角度ボタンの小さな記号をSVGアイコンに差し替え
-                ・タブ継ぎ目の欠けを修正、改行位置を均等化
+                ・タブ継ぎ目の欠けを修正
+   改訂       : リテイク3回目（最終）
+                ・リテイク2回目で入れた改行の均等化が、日本語の語中
+                  （「スワイ/プ」「背/景」）で折り返す不具合を起こしたため撤回
 
    テーマ「ステッカー工房」
    このツールの仕事は「切り抜いたものを貼る」こと。
@@ -954,11 +957,6 @@ button {
     flex-direction: column;
     gap: 12px;
     margin-top: 16px;
-}
-
-.btn-flatten.action-btn-flatten,
-.guide-text.canvas-guide-text {
-    text-wrap: balance;
 }
 
 .btn-flatten.action-btn-flatten {
