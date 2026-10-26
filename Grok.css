@@ -1,9 +1,9 @@
 /* ==========================================================================
-   Grok (xAI) - Clean Creative Tool  v3
+   Grok (xAI) - Clean Creative Tool  FINAL
    Model: Grok (latest free-tier available)
    Theme: Clean Creative Tool — 清潔で使いやすいクリエイティブツール
    UX最優先：タッチターゲット拡大・視認性・操作フィードバック・情報階層の明確化
-   Revision v3: ヘッダー窮屈さ解消・二次ボタンコントラスト強化・細部洗練
+   Final Revision: ヘッダー途中切れ最小化・二次ボタンコントラスト最大化・最終磨き
    ========================================================================== */
 
 /* ==========================================================================
@@ -55,18 +55,18 @@
     overflow: hidden;
 }
 
-/* ヘッダーバー（タイトル + CSS切替）— 詰まり感を軽減 */
+/* ヘッダーバー — 途中切れを最小化するための最終調整 */
 .app-header-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: 5px;
     margin-bottom: 12px;
     width: 100%;
 }
 
 .app-header-bar .app-title {
-    font-size: 0.98rem;
+    font-size: 0.92rem;
     font-weight: 700;
     margin: 0;
     white-space: nowrap;
@@ -88,19 +88,19 @@
 
 .css-theme-select {
     width: auto;
-    max-width: 108px;
-    padding: 5px 6px;
-    font-size: 0.7rem;
+    max-width: 98px;
+    padding: 5px 5px;
+    font-size: 0.68rem;
     font-weight: 500;
     border: 1px solid #cbd5e1;
     border-radius: 7px;
     background: #ffffff;
     color: #334155;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 5px center;
-    padding-right: 18px;
+    background-position: right 4px center;
+    padding-right: 16px;
 }
 
 .css-theme-select:focus {
@@ -111,8 +111,8 @@
 
 .btn-cycle-css {
     margin: 0;
-    padding: 6px 8px;
-    font-size: 0.7rem;
+    padding: 5px 7px;
+    font-size: 0.68rem;
     font-weight: 600;
     background: #475569;
     color: #ffffff;
@@ -551,7 +551,7 @@
 .d-pad-btn.down { grid-column: 2; grid-row: 2; }
 .d-pad-btn.right { grid-column: 3; }
 
-/* 二次ボタン（角度ステップ）— コントラスト強化 */
+/* 二次ボタン（角度ステップ）— 最終コントラスト強化 */
 .angle-step-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -562,19 +562,19 @@
 .angle-step-btn {
     padding: 7px 0;
     cursor: pointer;
-    border: 1px solid #a5b4fc;
-    background: #e0e7ff;
+    border: 1px solid #818cf8;
+    background: #c7d2fe;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.74rem;
-    color: #3730a3;
+    color: #312e81;
     white-space: nowrap;
     transition: background 0.1s ease, border-color 0.1s ease;
 }
 
 .angle-step-btn:active {
-    background: #c7d2fe;
-    border-color: #818cf8;
+    background: #a5b4fc;
+    border-color: #6366f1;
 }
 
 .sliders-stack {
@@ -603,14 +603,14 @@
     margin-bottom: 2px;
 }
 
-/* ミニボタン（左右反転・0°に戻す）— コントラスト強化 */
+/* ミニボタン（左右反転・0°に戻す）— 最終コントラスト強化 */
 .btn-mini {
     padding: 4px 8px;
     font-size: 0.7rem;
-    font-weight: 600;
-    background: #e0e7ff;
-    border: 1px solid #a5b4fc;
-    color: #3730a3;
+    font-weight: 700;
+    background: #c7d2fe;
+    border: 1px solid #818cf8;
+    color: #312e81;
     border-radius: 6px;
     cursor: pointer;
     white-space: nowrap;
@@ -619,8 +619,8 @@
 
 .btn-mini:active,
 .btn-mini.is-flipped {
-    background: #c7d2fe;
-    border-color: #818cf8;
+    background: #a5b4fc;
+    border-color: #6366f1;
 }
 
 .range-input {
