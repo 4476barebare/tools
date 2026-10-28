@@ -257,18 +257,46 @@
 
 <script>
     // =========================================================
-    // CSSファイル切り替え機能（ここに用意したCSSファイルを追加できます）
+    // CSSファイル切り替え機能（リスト管理・初期CSS指定・URLハッシュ対応）
     // =========================================================
-const cssFileList = [
+    const cssFileList = [
         { name: 'デフォルト (style.css)', file: 'style.css' },
-        { name: 'chatGPT GPT-6', file: 'ChatGPT.css' },
-        { name: 'Gemini 1.5 Pro', file: 'Gemini.css' },
-        { name: 'Claude Sonnet 5.5', file: 'Claude.css' },
-        { name: 'Grok free-tier available', file: 'Grok.css' }
+        { name: 'テーマ2 (style2.css)', file: 'style2.css' },
+        { name: 'テーマ3 (style3.css)', file: 'style3.css' }
     ];
+
+    // ★URLハッシュが無い場合に初期ロードで読み込むCSSファイル名
+    const defaultCssFile = 'style.css';
+
     let currentCssIndex = 0;
 
-    function initCssSwitcher() {
+    // CSSファイル名（またはハッシュ文字列）から配列インデックスを検索・なければ追加
+    function resolveCssIndexByFileName(rawName, allowDynamicAdd = true) {
+        if (!rawName) return -1;
+        const cleanName = decodeURIComponent(rawName.trim().replace(/^#/, ''));
+        if (!cleanName) return -1;
+
+        // 拡張子 .css が省略されている場合は補完した候補も用意
+        const withExt = cleanName.toLowerCase().endsWith('.css') ? cleanName : cleanName + '.css';
+
+        const foundIdx = cssFileList.findIndex(item =>
+            item.file.toLowerCase() === cleanName.toLowerCase() ||
+            item.file.toLowerCase() === withExt.toLowerCase()
+        );
+
+        if (foundIdx !== -1) {
+            return foundIdx;
+        }
+
+        // リストに未登録のCSSファイルがURLハッシュで指定された場合、リストに自動追加して適用
+        if (allowDynamicAdd) {
+            cssFileList.push({ name: withExt, file: withExt });
+            return cssFileList.length - 1;
+        }
+        return -1;
+    }
+
+    function renderCssSelectOptions() {
         const selectEl = document.getElementById('cssThemeSelect');
         if (!selectEl) return;
         selectEl.innerHTML = '';
@@ -282,27 +310,62 @@ const cssFileList = [
         selectEl.value = currentCssIndex;
     }
 
-    function applyCssByIndex(index) {
+    function applyCssByIndex(index, updateUrlHash = true) {
         if (index < 0 || index >= cssFileList.length) return;
         currentCssIndex = index;
+        const targetCssFile = cssFileList[currentCssIndex].file;
+
         const linkEl = document.getElementById('themeStylesheet');
         if (linkEl) {
-            linkEl.setAttribute('href', cssFileList[currentCssIndex].file);
+            linkEl.setAttribute('href', targetCssFile);
         }
+
         const selectEl = document.getElementById('cssThemeSelect');
         if (selectEl) {
             selectEl.value = currentCssIndex;
         }
+
+        if (updateUrlHash) {
+            history.replaceState(null, '', '#' + encodeURIComponent(targetCssFile));
+        }
+    }
+
+    function initCssSwitcher() {
+        // 1. まず初期設定 (defaultCssFile) のインデックスを特定
+        let initialIdx = resolveCssIndexByFileName(defaultCssFile, false);
+        if (initialIdx === -1) initialIdx = 0;
+
+        // 2. URLにハッシュ (#xxx.css) があればそちらを最優先
+        if (window.location.hash && window.location.hash.length > 1) {
+            const hashIdx = resolveCssIndexByFileName(window.location.hash, true);
+            if (hashIdx !== -1) {
+                initialIdx = hashIdx;
+            }
+        }
+
+        renderCssSelectOptions();
+        applyCssByIndex(initialIdx, Boolean(window.location.hash));
     }
 
     function changeCssFromSelect(indexStr) {
-        applyCssByIndex(parseInt(indexStr, 10));
+        applyCssByIndex(parseInt(indexStr, 10), true);
     }
 
     function cycleCssTheme() {
         const nextIndex = (currentCssIndex + 1) % cssFileList.length;
-        applyCssByIndex(nextIndex);
+        applyCssByIndex(nextIndex, true);
     }
+
+    // ブラウザ上でURLのハッシュが直接書き換えられた場合にも連動
+    window.addEventListener('hashchange', function() {
+        if (window.location.hash && window.location.hash.length > 1) {
+            const idx = resolveCssIndexByFileName(window.location.hash, true);
+            if (idx !== -1) {
+                renderCssSelectOptions();
+                applyCssByIndex(idx, false);
+            }
+        }
+    });
 
     initCssSwitcher();
     // =========================================================
