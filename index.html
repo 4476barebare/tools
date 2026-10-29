@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>画像重ね合わせツール</title>
-    <link rel="stylesheet" href="style.css" id="themeStylesheet">
+    <link rel="stylesheet" href="Claude.css" id="themeStylesheet">
     <style>
         /* 全CSSファイル共通：ヘッダー＆CSS切り替えUI用スタイル */
         .app-header-bar {
@@ -260,13 +260,14 @@
     // CSSファイル切り替え機能（リスト管理・初期CSS指定・URLハッシュ対応）
     // =========================================================
     const cssFileList = [
-        { name: 'デフォルト (style.css)', file: 'style.css' },
-        { name: 'テーマ2 (style2.css)', file: 'style2.css' },
-        { name: 'テーマ3 (style3.css)', file: 'style3.css' }
-    ];
+        { name: 'Claude Sonnet 5.5', file: 'Claude.css' },
+        { name: 'chatGPT GPT-6', file: 'ChatGPT.css' },
+        { name: 'Gemini 1.5 Pro', file: 'Gemini.css' },
+        { name: 'Grok free-tier available', file: 'Grok.css' }
+    ]
 
     // ★URLハッシュが無い場合に初期ロードで読み込むCSSファイル名
-    const defaultCssFile = 'style.css';
+    const defaultCssFile = 'Claude.css';
 
     let currentCssIndex = 0;
 
