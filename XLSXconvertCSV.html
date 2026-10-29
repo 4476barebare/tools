@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XLSX → CSV 変換</title>
+<style>
+:root{color-scheme:light;--ink:#172033;--muted:#667085;--line:#d8e0ea;--blue:#155eef;--pale:#f3f6fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pale);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif}
+main{width:min(100% - 32px,480px);margin:8vh auto;padding:28px;background:#fff;border:1px solid #e7ebf1;border-radius:18px;box-shadow:0 12px 36px #1822300d}
+h1{font-size:1.35rem;margin:0 0 10px}
+p{line-height:1.7;color:var(--muted);font-size:.92rem}
+.drop{display:block;margin:22px 0 16px;padding:26px 16px;border:2px dashed #c4cfdd;border-radius:12px;text-align:center;background:#f8fafc;cursor:pointer}
+.drop:focus-within,.drop.has-file{border-color:var(--blue);background:#f1f6ff}
+.drop strong{display:block;margin-bottom:8px}
+#fileName{display:block;color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
+input[type=file]{display:block;width:100%;margin-top:14px;font-size:.9rem}
+button{width:100%;padding:14px 18px;border:0;border-radius:10px;background:var(--blue);color:white;font-size:1rem;font-weight:700;cursor:pointer}
+button:disabled{background:#aab4c3;cursor:not-allowed}
+#status{min-height:1.5em;margin:14px 0 0;font-size:.9rem;font-weight:600;color:#067647;overflow-wrap:anywhere}
+#status.error{color:#b42318}
+.note{border-top:1px solid #edf0f4;margin-top:22px;padding-top:14px;font-size:.8rem}
+</style>
+</head>
+<body>
+<main>
+  <h1>XLSX → CSV 変換</h1>
+  <p>Excelファイルの最初のシートをCSVに変換します。データ途中の空白行・空白列は維持し、末尾の空白行・空白列だけを除外します。</p>
+  <label class="drop" id="drop">
+    <strong>Excelファイルを選択</strong>
+    <span id="fileName">.xlsx ファイルを指定してください</span>
+    <input id="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+  </label>
+  <button id="convert" disabled>CSVに変換してダウンロード</button>
+  <p id="status" role="status" aria-live="polite"></p>
+  <p class="note">変換はブラウザ内で行います。選択したExcelファイルは変換のために外部サーバーへ送信されません。CSVはUTF-8（BOMなし）です。</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+(() => {
+  const fileInput = document.getElementById('file');
+  const fileName = document.getElementById('fileName');
+  const drop = document.getElementById('drop');
+  const button = document.getElementById('convert');
+  const status = document.getElementById('status');
+
+  let selectedFile = null;
+
+  function setStatus(message, isError = false) {
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+  }
+
+  fileInput.addEventListener('change', () => {
+    selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+    fileName.textContent = selectedFile ? selectedFile.name : '.xlsx ファイルを指定してください';
+    drop.classList.toggle('has-file', !!selectedFile);
+    button.disabled = !selectedFile;
+    setStatus('');
+  });
+
+  // PHP版のファイル名処理に合わせ、パス部分と末尾の拡張子を取り除く
+  function makeCsvName(originalName) {
+    const base = originalName.replace(/^.*[\\/]/u, '');
+    const withoutExt = base.replace(/\.[^.]*$/u, '');
+    return (withoutExt.trim() ? withoutExt : 'converted') + '.csv';
+  }
+
+  // PHP fputcsv() の既定 escape "\" に合わせたCSVフィールド化
+  function csvField(value) {
+    let s = value == null ? '' : String(value);
+    if (/[,"\r\n\\]/.test(s)) {
+      s = s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      return '"' + s + '"';
+    }
+    return s;
+  }
+
+  function cellText(cell) {
+    if (!cell || cell.v == null) return '';
+    // Excelで表示される文字列がある場合はそれを優先し、PHPライブラリの表示値に近づける
+    return cell.w !== undefined ? String(cell.w) : String(cell.v);
+  }
+
+  button.addEventListener('click', async () => {
+    if (!selectedFile) {
+      setStatus('❌ エラー: ファイルを選択してください。', true);
+      return;
+    }
+    if (!window.XLSX) {
+      setStatus('❌ エラー: Excel解析ライブラリを読み込めませんでした。通信環境を確認してください。', true);
+      return;
+    }
+
+    button.disabled = true;
+    setStatus('変換中です…');
+
+    try {
+      const buffer = await selectedFile.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array', cellDates: false });
+      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+        throw new Error('Excelファイルにシートがありません。');
+      }
+
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (!sheet || !sheet['!ref']) {
+        setStatus('データがありません。空のCSVを出力します。');
+        const blob = new Blob([''], { type: 'text/csv;charset=utf-8' });
+        downloadBlob(blob, makeCsvName(selectedFile.name));
+        return;
+      }
+
+      const range = XLSX.utils.decode_range(sheet['!ref']);
+      let maxCols = 0;
+      let lastNonEmptyRowIndex = -1;
+      const rows = [];
+
+      // PHP版と同じく、trim後に値があるセルから最終行・最大列を決める
+      for (let r = range.s.r; r <= range.e.r; r++) {
+        const row = [];
+        let rowHasValue = false;
+        for (let c = range.s.c; c <= range.e.c; c++) {
+          const address = XLSX.utils.encode_cell({ r, c });
+          const cell = sheet[address];
+          const value = cellText(cell);
+          row.push(value);
+          if (value.trim() !== '') {
+            rowHasValue = true;
+            if (c + 1 > maxCols) maxCols = c + 1;
+          }
+        }
+        rows[r] = row;
+        if (rowHasValue) lastNonEmptyRowIndex = r;
+      }
+
+      const output = [];
+      if (lastNonEmptyRowIndex >= 0 && maxCols > 0) {
+        for (let r = 0; r <= lastNonEmptyRowIndex; r++) {
+          const sourceRow = rows[r] || [];
+          const cleanRow = [];
+          for (let c = 0; c < maxCols; c++) {
+            let cell = sourceRow[c] === undefined ? '' : sourceRow[c];
+            if (typeof cell === 'string') cell = cell.replace(/\r\n|\r|\n/g, ' ');
+            cleanRow.push(cell);
+          }
+          output.push(cleanRow.map(csvField).join(','));
+        }
+      }
+
+      const csv = output.length ? output.join('\r\n') + '\r\n' : '';
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      downloadBlob(blob, makeCsvName(selectedFile.name));
+      setStatus('変換が完了しました。CSVをダウンロードしました。');
+    } catch (error) {
+      setStatus('❌ エラー: XLSXの解析・変換に失敗しました。' + (error && error.message ? ' 詳細: ' + error.message : ''), true);
+    } finally {
+      button.disabled = !selectedFile;
+    }
+  });
+
+  function downloadBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+})();
+</script>
+</body>
+</html>
