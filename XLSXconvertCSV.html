@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>XLSX → CSV 変換</title>
+<title>XLSX → CSV / JSON 変換</title>
 <style>
 :root{color-scheme:light;--ink:#172033;--muted:#667085;--line:#d8e0ea;--blue:#155eef;--pale:#f3f6fb}
 *{box-sizing:border-box}
@@ -16,6 +16,16 @@ p{line-height:1.7;color:var(--muted);font-size:.92rem}
 .drop strong{display:block;margin-bottom:8px}
 #fileName{display:block;color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
 input[type=file]{display:block;width:100%;margin-top:14px;font-size:.9rem}
+.options{margin:0 0 18px;padding:14px 16px;background:#f8fafc;border:1px solid var(--line);border-radius:12px}
+.opt-label{display:block;font-size:.85rem;font-weight:700;margin-bottom:8px;color:var(--ink)}
+.format-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.format-item{position:relative}
+.format-item input{position:absolute;opacity:0;pointer-events:none}
+.format-item span{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;text-align:center;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .15s}
+.format-item input:checked + span{border-color:var(--blue);background:#eef4ff;color:var(--blue)}
+.json-type-wrap{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);display:none}
+.json-type-wrap.active{display:block}
+select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:.9rem}
 button{width:100%;padding:14px 18px;border:0;border-radius:10px;background:var(--blue);color:white;font-size:1rem;font-weight:700;cursor:pointer}
 button:disabled{background:#aab4c3;cursor:not-allowed}
 #status{min-height:1.5em;margin:14px 0 0;font-size:.9rem;font-weight:600;color:#067647;overflow-wrap:anywhere}
@@ -25,16 +35,41 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
 </head>
 <body>
 <main>
-  <h1>XLSX → CSV 変換</h1>
-  <p>Excelファイルの最初のシートをCSVに変換します。データ途中の空白行・空白列は維持し、末尾の空白行・空白列だけを除外します。</p>
+  <h1>XLSX → CSV / JSON 変換</h1>
+  <p>Excelファイルの最初のシートをCSVまたはJSONに変換します。データ途中の空白行・空白列は維持し、末尾の空白行・空白列だけを除外します。</p>
   <label class="drop" id="drop">
     <strong>Excelファイルを選択</strong>
     <span id="fileName">.xlsx ファイルを指定してください</span>
     <input id="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
   </label>
+
+  <div class="options">
+    <span class="opt-label">出力形式を選択</span>
+    <div class="format-group">
+      <label class="format-item">
+        <input type="radio" name="outputFormat" value="csv" checked>
+        <span>CSV (.csv)</span>
+      </label>
+      <label class="format-item">
+        <input type="radio" name="outputFormat" value="json">
+        <span>JSON (.json)</span>
+      </label>
+    </div>
+
+    <div class="json-type-wrap" id="jsonTypeWrap">
+      <label class="opt-label" for="jsonType">JSON変換ルール（Actions互換）</label>
+      <select id="jsonType">
+        <option value="auto">自動判別（ファイル名・列名から自動選択）</option>
+        <option value="location">location形式（convert_location.js）</option>
+        <option value="fish">fish形式（convert_fish.js）</option>
+        <option value="shop">shop形式（convert_shop.js）</option>
+      </select>
+    </div>
+  </div>
+
   <button id="convert" disabled>CSVに変換してダウンロード</button>
   <p id="status" role="status" aria-live="polite"></p>
-  <p class="note">変換はブラウザ内で行います。選択したExcelファイルは変換のために外部サーバーへ送信されません。CSVはUTF-8（BOMなし）です。</p>
+  <p class="note">変換はブラウザ内で行います。選択したExcelファイルは変換のために外部サーバーへ送信されません。CSV/JSONはUTF-8（BOMなし）です。</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
@@ -44,6 +79,9 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
   const drop = document.getElementById('drop');
   const button = document.getElementById('convert');
   const status = document.getElementById('status');
+  const formatRadios = document.querySelectorAll('input[name="outputFormat"]');
+  const jsonTypeWrap = document.getElementById('jsonTypeWrap');
+  const jsonTypeSelect = document.getElementById('jsonType');
 
   let selectedFile = null;
 
@@ -51,6 +89,22 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
     status.textContent = message;
     status.classList.toggle('error', isError);
   }
+
+  function getSelectedFormat() {
+    const checked = document.querySelector('input[name="outputFormat"]:checked');
+    return checked ? checked.value : 'csv';
+  }
+
+  function updateFormatUI() {
+    const fmt = getSelectedFormat();
+    jsonTypeWrap.classList.toggle('active', fmt === 'json');
+    button.textContent = fmt === 'json' ? 'JSONに変換してダウンロード' : 'CSVに変換してダウンロード';
+    setStatus('');
+  }
+
+  formatRadios.forEach(radio => {
+    radio.addEventListener('change', updateFormatUI);
+  });
 
   fileInput.addEventListener('change', () => {
     selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
@@ -61,26 +115,193 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
   });
 
   // PHP版のファイル名処理に合わせ、パス部分と末尾の拡張子を取り除く
-  function makeCsvName(originalName) {
+  function makeOutputName(originalName, ext) {
     const base = originalName.replace(/^.*[\\/]/u, '');
     const withoutExt = base.replace(/\.[^.]*$/u, '');
-    return (withoutExt.trim() ? withoutExt : 'converted') + '.csv';
+    return (withoutExt.trim() ? withoutExt : 'converted') + '.' + ext;
   }
 
-  // PHP fputcsv() の既定 escape "\" に合わせたCSVフィールド化
+  // PHP fputcsv() の既定 escape "\" に合わせたCSVフィールド化（現行仕様維持）
   function csvField(value) {
     let s = value == null ? '' : String(value);
     if (/[,"\r\n\\]/.test(s)) {
-      s = s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      s = s.replace(/\\/g, '\\\\').replace(/"/g, '\"');
       return '"' + s + '"';
     }
     return s;
   }
 
+  // PHP版（SimpleXLSX::rows()）と同様に、表示書式による丸めや桁区切りカンマ混入を防ぐため生データ(cell.v)を基本とする
   function cellText(cell) {
     if (!cell || cell.v == null) return '';
-    // Excelで表示される文字列がある場合はそれを優先し、PHPライブラリの表示値に近づける
-    return cell.w !== undefined ? String(cell.w) : String(cell.v);
+    if (cell.t === 'n') {
+      return String(cell.v);
+    }
+    if (cell.t === 'b') {
+      return cell.v ? '1' : '0';
+    }
+    return String(cell.v);
+  }
+
+  // ファイル名またはヘッダー行からJSON変換タイプを自動判別
+  function detectJsonType(originalName, headers) {
+    const lowerName = (originalName || '').toLowerCase();
+    const headerSet = new Set(headers.map(h => h.trim()));
+
+    if (headerSet.has('registration') && headerSet.has('parent')) {
+      return 'fish';
+    }
+    if (headerSet.has('individualId') || headerSet.has('areaId')) {
+      return 'location';
+    }
+    if (lowerName.includes('fish')) return 'fish';
+    if (lowerName.includes('location')) return 'location';
+    if (lowerName.includes('shop')) return 'shop';
+
+    return 'shop';
+  }
+
+  // 1. convert_location.js 互換ロジック
+  function convertLocationCsvToJson(csvData) {
+    const lines = csvData.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+    if (lines.length < 2) return { json: '[]', count: 0 };
+
+    const allRows = lines.slice(1).map(line => {
+      const cols = line.split(',');
+      return {
+        name: cols[0]?.trim() || undefined,
+        zoom: cols[1]?.trim() ? parseFloat(cols[1]) : undefined,
+        individualId: cols[2]?.trim() || undefined,
+        lat: cols[3]?.trim() ? parseFloat(cols[3]) : undefined,
+        lng: cols[4]?.trim() ? parseFloat(cols[4]) : undefined,
+        areaId: cols[5]?.trim() || undefined,
+        url: cols[6]?.trim() || undefined,
+        notes: cols[7]?.trim() || undefined,
+        icon: cols[8]?.trim() ? cols[8].trim().toLowerCase() : undefined,
+        whether: cols[9]?.trim() || undefined,
+        type: cols[10]?.trim() || undefined
+      };
+    });
+
+    return {
+      json: JSON.stringify(allRows, null, 2),
+      count: allRows.length
+    };
+  }
+
+  // 2. convert_fish.js 互換ロジック
+  function convertFishCsvToJson(csvData) {
+    const lines = csvData.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+    if (lines.length < 2) return { json: '{}', count: 0 };
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    const regIdx = headers.indexOf('registration');
+    const parentIdx = headers.indexOf('parent');
+    const nameIdx = headers.indexOf('name');
+    const latIdx = headers.indexOf('lat');
+    const lngIdx = headers.indexOf('lng');
+
+    if (regIdx === -1 || parentIdx === -1 || nameIdx === -1 || latIdx === -1 || lngIdx === -1) {
+      throw new Error('fish形式に必要な必須列（registration, parent, name, lat, lng）が見つかりません。');
+    }
+
+    const extraColumns = [];
+    headers.forEach((h, idx) => {
+      if (h && !['registration', 'parent', 'name', 'lat', 'lng'].includes(h)) {
+        extraColumns.push({ name: h, index: idx });
+      }
+    });
+
+    const resultData = {};
+    let validRows = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+
+      const cols = lines[i].split(',');
+      const reg = cols[regIdx] ? cols[regIdx].trim() : '';
+      const parent = cols[parentIdx] ? cols[parentIdx].trim() : '';
+      const fishName = cols[nameIdx] ? cols[nameIdx].trim() : '';
+      const lat = cols[latIdx] ? cols[latIdx].trim() : '';
+      const lng = cols[lngIdx] ? cols[lngIdx].trim() : '';
+
+      if (!reg || !parent || !fishName || !lat || !lng) continue;
+
+      if (!resultData[reg]) {
+        resultData[reg] = {};
+      }
+      if (!resultData[reg][parent]) {
+        resultData[reg][parent] = {};
+      }
+      if (!resultData[reg][parent][fishName]) {
+        resultData[reg][parent][fishName] = {
+          coords: ''
+        };
+      }
+
+      const coordString = `${lat},${lng}`;
+      if (resultData[reg][parent][fishName].coords === '') {
+        resultData[reg][parent][fishName].coords = coordString;
+      } else {
+        resultData[reg][parent][fishName].coords += `|${coordString}`;
+      }
+
+      extraColumns.forEach(ext => {
+        const val = cols[ext.index] ? cols[ext.index].trim() : '';
+        if (val !== '') {
+          if (resultData[reg][parent][fishName][ext.name] === undefined) {
+            resultData[reg][parent][fishName][ext.name] = isNaN(val) ? val : Number(val);
+          }
+        }
+      });
+
+      validRows++;
+    }
+
+    return {
+      json: JSON.stringify(resultData, null, 2),
+      count: validRows
+    };
+  }
+
+  // 3. convert_shop.js 互換ロジック
+  function convertShopCsvToJson(csvData) {
+    const lines = csvData.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+    if (lines.length < 2) {
+      throw new Error('データがありません。');
+    }
+
+    const headers = lines[0].split(',').map(h => h.trim());
+    const allRows = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      const cols = lines[i].split(',');
+      const rowObj = {};
+
+      headers.forEach((header, index) => {
+        if (header && cols[index] && cols[index].trim() !== '') {
+          const val = cols[index].trim();
+          if (header === 'lat' || header === 'lng') {
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+              rowObj[header] = num;
+            }
+          } else {
+            rowObj[header] = val;
+          }
+        }
+      });
+
+      if (Object.keys(rowObj).length > 0) {
+        allRows.push(rowObj);
+      }
+    }
+
+    return {
+      json: JSON.stringify(allRows, null, 2),
+      count: allRows.length
+    };
   }
 
   button.addEventListener('click', async () => {
@@ -93,6 +314,7 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
       return;
     }
 
+    const format = getSelectedFormat();
     button.disabled = true;
     setStatus('変換中です…');
 
@@ -105,9 +327,11 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
 
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       if (!sheet || !sheet['!ref']) {
-        setStatus('データがありません。空のCSVを出力します。');
-        const blob = new Blob([''], { type: 'text/csv;charset=utf-8' });
-        downloadBlob(blob, makeCsvName(selectedFile.name));
+        const emptyContent = format === 'json' ? '[]' : '';
+        const mimeType = format === 'json' ? 'application/json;charset=utf-8' : 'text/csv;charset=utf-8';
+        setStatus('データがありません。空のファイルを出力します。');
+        const blob = new Blob([emptyContent], { type: mimeType });
+        downloadBlob(blob, makeOutputName(selectedFile.name, format));
         return;
       }
 
@@ -116,15 +340,15 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
       let lastNonEmptyRowIndex = -1;
       const rows = [];
 
-      // PHP版と同じく、trim後に値があるセルから最終行・最大列を決める
-      for (let r = range.s.r; r <= range.e.r; r++) {
+      // 先頭行(r=0)・先頭列(c=0)が空欄の場合でも列ズレが起きないよう必ず 0 から走査する
+      for (let r = 0; r <= range.e.r; r++) {
         const row = [];
         let rowHasValue = false;
-        for (let c = range.s.c; c <= range.e.c; c++) {
+        for (let c = 0; c <= range.e.c; c++) {
           const address = XLSX.utils.encode_cell({ r, c });
           const cell = sheet[address];
           const value = cellText(cell);
-          row.push(value);
+          row[c] = value;
           if (value.trim() !== '') {
             rowHasValue = true;
             if (c + 1 > maxCols) maxCols = c + 1;
@@ -149,11 +373,33 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
       }
 
       const csv = output.length ? output.join('\r\n') + '\r\n' : '';
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-      downloadBlob(blob, makeCsvName(selectedFile.name));
-      setStatus('変換が完了しました。CSVをダウンロードしました。');
+
+      if (format === 'csv') {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        downloadBlob(blob, makeOutputName(selectedFile.name, 'csv'));
+        setStatus('変換が完了しました。CSVをダウンロードしました。');
+      } else {
+        const firstRowHeaders = (rows[0] || []).slice(0, maxCols);
+        const selectedType = jsonTypeSelect.value;
+        const resolvedType = selectedType === 'auto'
+          ? detectJsonType(selectedFile.name, firstRowHeaders)
+          : selectedType;
+
+        let result;
+        if (resolvedType === 'location') {
+          result = convertLocationCsvToJson(csv);
+        } else if (resolvedType === 'fish') {
+          result = convertFishCsvToJson(csv);
+        } else {
+          result = convertShopCsvToJson(csv);
+        }
+
+        const blob = new Blob([result.json], { type: 'application/json;charset=utf-8' });
+        downloadBlob(blob, makeOutputName(selectedFile.name, 'json'));
+        setStatus(`変換が完了しました（${resolvedType}形式・${result.count}件）。JSONをダウンロードしました。`);
+      }
     } catch (error) {
-      setStatus('❌ エラー: XLSXの解析・変換に失敗しました。' + (error && error.message ? ' 詳細: ' + error.message : ''), true);
+      setStatus('❌ エラー: 解析・変換に失敗しました。' + (error && error.message ? ' 詳細: ' + error.message : ''), true);
     } finally {
       button.disabled = !selectedFile;
     }
