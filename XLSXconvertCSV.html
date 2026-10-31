@@ -4,55 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>XLSX → CSV / JSON 変換</title>
-<style>
-:root{color-scheme:light;--ink:#172033;--muted:#667085;--line:#d8e0ea;--blue:#155eef;--pale:#f3f6fb}
-*{box-sizing:border-box}
-body{margin:0;background:var(--pale);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif}
-main{width:min(100% - 32px,720px);margin:5vh auto;padding:28px;background:#fff;border:1px solid #e7ebf1;border-radius:18px;box-shadow:0 12px 36px #1822300d}
-h1{font-size:1.35rem;margin:0 0 10px}
-p{line-height:1.7;color:var(--muted);font-size:.92rem}
-.drop{display:block;margin:22px 0 16px;padding:26px 16px;border:2px dashed #c4cfdd;border-radius:12px;text-align:center;background:#f8fafc;cursor:pointer}
-.drop:focus-within,.drop.has-file{border-color:var(--blue);background:#f1f6ff}
-.drop strong{display:block;margin-bottom:8px}
-#fileName{display:block;color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
-input[type=file]{display:block;width:100%;margin-top:14px;font-size:.9rem}
-.options{margin:0 0 18px;padding:14px 16px;background:#f8fafc;border:1px solid var(--line);border-radius:12px}
-.opt-label{display:block;font-size:.85rem;font-weight:700;margin-bottom:8px;color:var(--ink)}
-.format-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.format-item{position:relative}
-.format-item input{position:absolute;opacity:0;pointer-events:none}
-.format-item span{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;text-align:center;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .15s}
-.format-item input:checked + span{border-color:var(--blue);background:#eef4ff;color:var(--blue)}
-
-/* 横スクロール対応プレビュー＆列ごと数値チェックUI */
-.preview-box{display:none;margin:0 0 18px;padding:14px 16px;background:#f8fafc;border:1px solid var(--line);border-radius:12px}
-.preview-box.active{display:block}
-.preview-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.preview-sub{font-size:.8rem;color:var(--muted)}
-.preview-actions{display:flex;gap:6px}
-.mini-btn{padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-size:.8rem;font-weight:600;cursor:pointer;width:auto}
-.mini-btn:hover{border-color:var(--blue);color:var(--blue)}
-.table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;background:#fff}
-.preview-table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;font-size:.84rem}
-.preview-table th,.preview-table td{padding:9px 12px;border-right:1px solid #edf0f4;border-bottom:1px solid #edf0f4;text-align:left;vertical-align:top;min-width:115px;max-width:220px}
-.preview-table th:last-child,.preview-table td:last-child{border-right:0}
-.preview-table tr:last-child th,.preview-table tr:last-child td{border-bottom:0}
-.preview-table .row-label{position:sticky;left:0;z-index:2;background:#f1f5f9;font-weight:700;color:#334155;min-width:96px;max-width:96px;white-space:nowrap;border-right:2px solid var(--line)}
-.chk-cell{background:#f8fafc}
-.num-chk-label{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--ink);cursor:pointer;user-select:none;white-space:nowrap}
-.num-chk-label input{width:16px;height:16px;margin:0;accent-color:var(--blue);cursor:pointer}
-.hdr-cell{font-weight:700;color:var(--ink);background:#fff;word-break:break-all}
-.sample-cell{color:var(--muted);background:#fff}
-/* td自体にdisplay:-webkit-boxを当てるとテーブルセル構造が壊れて縦並びになるため、内部divに適用する */
-.cell-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;line-height:1.45}
-.empty-tag{color:#94a3b8;font-style:italic;font-weight:400}
-
-button.primary-btn{width:100%;padding:14px 18px;border:0;border-radius:10px;background:var(--blue);color:white;font-size:1rem;font-weight:700;cursor:pointer}
-button.primary-btn:disabled{background:#aab4c3;cursor:not-allowed}
-#status{min-height:1.5em;margin:14px 0 0;font-size:.9rem;font-weight:600;color:#067647;overflow-wrap:anywhere}
-#status.error{color:#b42318}
-.note{border-top:1px solid #edf0f4;margin-top:22px;padding-top:14px;font-size:.8rem}
-</style>
+<link rel="stylesheet" href="XLSXconvertCSV.css">
 </head>
 <body>
 <main>

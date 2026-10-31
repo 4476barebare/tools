@@ -1,0 +1,676 @@
+/* ==========================================================================
+   XLSX → CSV / JSON 変換ツール 用スタイル
+   Designed by Claude Sonnet 5.5
+   コンセプト：「方眼紙 × ポップなステッカー」
+   - 背景は表計算ソフトの方眼（セルの罫線）
+   - カードは太い枠線＋ベタ影のネオブルータル調
+   - 型指定 / ヘッダー / 1行目データ の3段をそれぞれ色分け
+   - CSVはミント、JSONはサンシャインで出力形式を一目で判別
+   - HTML・JSは変更不要（既存のクラス名・ID・状態クラスにそのまま対応）
+   ========================================================================== */
+
+:root {
+    color-scheme: light;
+
+    --ink: #1b1a2e;
+    --muted: #5d5a73;
+    --paper: #fff8e7;
+    --grid: rgba(27, 26, 46, 0.07);
+    --card: #ffffff;
+    --soft: #fffdf6;
+    --line: #e6dfca;
+
+    --mint: #34d399;
+    --mint-pale: #d7f7e6;
+    --sun: #ffc83d;
+    --sun-pale: #fff0bf;
+    --sky: #8fd3ff;
+    --sky-pale: #dff2ff;
+    --pink: #ff9ec7;
+    --danger: #e5484d;
+    --danger-pale: #ffe3e3;
+
+    --blue: #155eef; /* 旧変数名との互換用 */
+
+    --radius: 16px;
+    --bw: 2.5px;
+    --shadow: 5px 5px 0 var(--ink);
+    --shadow-sm: 3px 3px 0 var(--ink);
+
+    --font-body: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, sans-serif;
+    --font-head: "Hiragino Maru Gothic ProN", "Hiragino Sans", ui-rounded, -apple-system, BlinkMacSystemFont, "Noto Sans JP", Meiryo, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Hiragino Sans", monospace;
+}
+
+/* ==========================================================================
+   基本・ページ背景（方眼紙）
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(28px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+    background-color: var(--paper);
+    background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   メインカード
+   ========================================================================== */
+main {
+    --pad: 22px;
+    position: relative;
+    width: min(100%, 720px);
+    margin: clamp(8px, 4vh, 40px) auto 0;
+    padding: 0 var(--pad) var(--pad);
+    background: var(--card);
+    border: var(--bw) solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 7px 7px 0 var(--ink);
+}
+
+/* ウィンドウのタイトルバー風ストリップ */
+main::before {
+    content: "";
+    display: block;
+    height: 38px;
+    margin: 0 calc(var(--pad) * -1) 20px;
+    border-bottom: var(--bw) solid var(--ink);
+    border-radius: 17px 17px 0 0;
+    background:
+        radial-gradient(circle at 22px 50%, var(--pink) 0 6px, var(--ink) 6.5px 8.5px, transparent 9px),
+        radial-gradient(circle at 48px 50%, var(--sun) 0 6px, var(--ink) 6.5px 8.5px, transparent 9px),
+        radial-gradient(circle at 74px 50%, var(--mint) 0 6px, var(--ink) 6.5px 8.5px, transparent 9px),
+        repeating-linear-gradient(135deg, var(--sky) 0 10px, #a9deff 10px 20px);
+}
+
+/* ==========================================================================
+   見出し・説明文
+   ========================================================================== */
+h1 {
+    display: inline;
+    margin: 0;
+    padding: 0 6px;
+    font-family: var(--font-head);
+    font-size: clamp(1.25rem, 5.4vw, 1.65rem);
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1.7;
+    background: linear-gradient(transparent 58%, var(--sun) 58%, var(--sun) 92%, transparent 92%);
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+p {
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.75;
+}
+
+/* ==========================================================================
+   ファイル選択ドロップゾーン
+   ========================================================================== */
+.drop {
+    display: block;
+    margin: 22px 0 18px;
+    padding: 26px 16px 22px;
+    border: 3px dashed var(--ink);
+    border-radius: var(--radius);
+    background:
+        repeating-linear-gradient(-45deg, var(--sun-pale) 0 12px, #fffaf0 12px 24px);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
+}
+
+.drop strong {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--font-head);
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.drop strong::before {
+    content: "📂 ";
+}
+
+#fileName {
+    display: block;
+    color: var(--muted);
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+}
+
+.drop:focus-within {
+    outline: 3px solid var(--sky);
+    outline-offset: 3px;
+}
+
+.drop.has-file {
+    border-style: solid;
+    background: var(--mint-pale);
+    box-shadow: var(--shadow-sm);
+}
+
+.drop.has-file strong::before {
+    content: "✅ ";
+}
+
+.drop.has-file #fileName {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+@media (hover: hover) {
+    .drop:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: var(--shadow-sm);
+    }
+}
+
+input[type="file"] {
+    display: block;
+    width: 100%;
+    margin-top: 14px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 10px 16px;
+    border: var(--bw) solid var(--ink);
+    border-radius: 10px;
+    background: var(--sun);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 800;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+input[type="file"]::file-selector-button:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--ink);
+}
+
+/* ==========================================================================
+   出力形式（CSV / JSON）
+   ========================================================================== */
+.options {
+    margin: 0 0 18px;
+    padding: 14px 16px 16px;
+    background: var(--soft);
+    border: var(--bw) solid var(--ink);
+    border-radius: var(--radius);
+}
+
+.opt-label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--ink);
+    font-family: var(--font-head);
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.opt-label::before {
+    content: "■ ";
+    color: var(--mint);
+    -webkit-text-stroke: 1px var(--ink);
+}
+
+.format-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.format-item {
+    position: relative;
+}
+
+.format-item input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.format-item span {
+    display: block;
+    padding: 12px 10px;
+    border: var(--bw) solid var(--ink);
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--ink);
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+}
+
+.format-item span::before {
+    content: "○ ";
+    font-weight: 400;
+}
+
+@media (hover: hover) {
+    .format-item span:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 4px 4px 0 var(--ink);
+    }
+}
+
+.format-item input:checked + span {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--ink);
+    background: var(--mint);
+}
+
+.format-item input[value="json"]:checked + span {
+    background: var(--sun);
+}
+
+.format-item input:checked + span::before {
+    content: "● ";
+}
+
+.format-item input:focus-visible + span {
+    outline: 3px solid var(--sky);
+    outline-offset: 3px;
+}
+
+/* ==========================================================================
+   列プレビュー＆数値指定
+   ========================================================================== */
+.preview-box {
+    display: none;
+    margin: 0 0 20px;
+    padding: 14px 14px 16px;
+    background: var(--sky-pale);
+    border: var(--bw) solid var(--ink);
+    border-radius: var(--radius);
+}
+
+.preview-box.active {
+    display: block;
+    animation: pop-in 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+}
+
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.preview-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.preview-head .opt-label {
+    margin-bottom: 2px !important;
+}
+
+.preview-sub {
+    display: block;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.mini-btn {
+    width: auto;
+    padding: 7px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 800;
+    box-shadow: 2px 2px 0 var(--ink);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+}
+
+.mini-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--ink);
+    background: var(--pink);
+}
+
+@media (hover: hover) {
+    .mini-btn:hover {
+        background: var(--pink);
+    }
+}
+
+/* ---- テーブル ---- */
+.table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #ffffff;
+    border: var(--bw) solid var(--ink);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    scrollbar-color: var(--ink) var(--sun-pale);
+}
+
+.table-scroll::-webkit-scrollbar {
+    height: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: var(--sun-pale);
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background: var(--ink);
+    border-radius: 999px;
+    border: 2px solid var(--sun-pale);
+}
+
+.preview-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.84rem;
+}
+
+.preview-table th,
+.preview-table td {
+    min-width: 118px;
+    max-width: 220px;
+    padding: 10px 12px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+}
+
+.preview-table th:last-child,
+.preview-table td:last-child {
+    border-right: 0;
+}
+
+.preview-table tr:last-child th,
+.preview-table tr:last-child td {
+    border-bottom: 0;
+}
+
+/* 左端固定の行ラベル（3段それぞれ色分け） */
+.preview-table .row-label {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 104px;
+    max-width: 104px;
+    padding: 10px;
+    border-right: var(--bw) solid var(--ink);
+    color: var(--ink);
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.preview-table tr:nth-child(1) .row-label {
+    background: var(--sun);
+}
+
+.preview-table tr:nth-child(2) .row-label {
+    background: var(--sky);
+}
+
+.preview-table tr:nth-child(3) .row-label {
+    background: var(--pink);
+}
+
+/* 1段目：数値チェック */
+.chk-cell {
+    background: var(--soft);
+    transition: background-color 0.15s ease;
+}
+
+.chk-cell:has(input:checked) {
+    background: var(--mint-pale);
+}
+
+.num-chk-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.num-chk-label input {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    accent-color: var(--ink);
+    cursor: pointer;
+}
+
+/* 2段目：ヘッダー */
+.hdr-cell {
+    background: #ffffff;
+    color: var(--ink);
+    font-weight: 800;
+    word-break: break-all;
+}
+
+/* 3段目：1行目データ */
+.sample-cell {
+    background: var(--soft);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+/* 長文は3行で省略（tdではなく内部divに適用） */
+.cell-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-all;
+    line-height: 1.5;
+}
+
+.empty-tag {
+    color: #a39f8f;
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* ==========================================================================
+   変換ボタン
+   ========================================================================== */
+button.primary-btn {
+    display: block;
+    width: 100%;
+    min-height: 58px;
+    padding: 14px 18px;
+    border: var(--bw) solid var(--ink);
+    border-radius: 14px;
+    background: var(--mint);
+    color: var(--ink);
+    font-family: var(--font-head);
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.2s ease;
+}
+
+button.primary-btn::before {
+    content: "⬇ ";
+}
+
+@media (hover: hover) {
+    button.primary-btn:not(:disabled):hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 7px 7px 0 var(--ink);
+    }
+}
+
+button.primary-btn:not(:disabled):active {
+    transform: translate(5px, 5px);
+    box-shadow: 0 0 0 var(--ink);
+}
+
+button.primary-btn:focus-visible {
+    outline: 3px solid var(--sky);
+    outline-offset: 4px;
+}
+
+button.primary-btn:disabled {
+    border-style: dashed;
+    border-color: #b3ad98;
+    background: #ece7d6;
+    color: #8f8a77;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   ステータス表示
+   ========================================================================== */
+#status {
+    min-height: 0;
+    margin: 18px 0 0;
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+#status:not(:empty) {
+    padding: 11px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    background: var(--mint-pale);
+    box-shadow: var(--shadow-sm);
+}
+
+#status.error:not(:empty) {
+    background: var(--danger-pale);
+    color: #9b1c20;
+    border-color: var(--danger);
+    box-shadow: 3px 3px 0 var(--danger);
+}
+
+/* ==========================================================================
+   注意書き
+   ========================================================================== */
+.note {
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 2px dashed var(--ink);
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.note::before {
+    content: "🔒 ";
+}
+
+/* ==========================================================================
+   スマホ最適化
+   ========================================================================== */
+@media (max-width: 480px) {
+    main {
+        --pad: 16px;
+        border-radius: 18px;
+        box-shadow: 5px 5px 0 var(--ink);
+    }
+
+    main::before {
+        height: 32px;
+        margin-bottom: 16px;
+        background:
+            radial-gradient(circle at 18px 50%, var(--pink) 0 5px, var(--ink) 5.5px 7.5px, transparent 8px),
+            radial-gradient(circle at 40px 50%, var(--sun) 0 5px, var(--ink) 5.5px 7.5px, transparent 8px),
+            radial-gradient(circle at 62px 50%, var(--mint) 0 5px, var(--ink) 5.5px 7.5px, transparent 8px),
+            repeating-linear-gradient(135deg, var(--sky) 0 10px, #a9deff 10px 20px);
+    }
+
+    .drop {
+        padding: 22px 12px 18px;
+    }
+
+    .preview-box {
+        padding: 12px 10px 14px;
+    }
+
+    .preview-table th,
+    .preview-table td {
+        min-width: 108px;
+        padding: 9px 10px;
+    }
+
+    .preview-table .row-label {
+        min-width: 100px;
+        max-width: 100px;
+    }
+}
+
+/* ==========================================================================
+   動きを減らす設定への配慮
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
