@@ -8,7 +8,7 @@
 :root{color-scheme:light;--ink:#172033;--muted:#667085;--line:#d8e0ea;--blue:#155eef;--pale:#f3f6fb}
 *{box-sizing:border-box}
 body{margin:0;background:var(--pale);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif}
-main{width:min(100% - 32px,480px);margin:8vh auto;padding:28px;background:#fff;border:1px solid #e7ebf1;border-radius:18px;box-shadow:0 12px 36px #1822300d}
+main{width:min(100% - 32px,720px);margin:5vh auto;padding:28px;background:#fff;border:1px solid #e7ebf1;border-radius:18px;box-shadow:0 12px 36px #1822300d}
 h1{font-size:1.35rem;margin:0 0 10px}
 p{line-height:1.7;color:var(--muted);font-size:.92rem}
 .drop{display:block;margin:22px 0 16px;padding:26px 16px;border:2px dashed #c4cfdd;border-radius:12px;text-align:center;background:#f8fafc;cursor:pointer}
@@ -23,11 +23,30 @@ input[type=file]{display:block;width:100%;margin-top:14px;font-size:.9rem}
 .format-item input{position:absolute;opacity:0;pointer-events:none}
 .format-item span{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;text-align:center;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .15s}
 .format-item input:checked + span{border-color:var(--blue);background:#eef4ff;color:var(--blue)}
-.json-type-wrap{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);display:none}
-.json-type-wrap.active{display:block}
-select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:.9rem}
-button{width:100%;padding:14px 18px;border:0;border-radius:10px;background:var(--blue);color:white;font-size:1rem;font-weight:700;cursor:pointer}
-button:disabled{background:#aab4c3;cursor:not-allowed}
+
+/* 横スクロール対応プレビュー＆列ごと数値チェックUI */
+.preview-box{display:none;margin:0 0 18px;padding:14px 16px;background:#f8fafc;border:1px solid var(--line);border-radius:12px}
+.preview-box.active{display:block}
+.preview-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.preview-sub{font-size:.8rem;color:var(--muted)}
+.preview-actions{display:flex;gap:6px}
+.mini-btn{padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-size:.78rem;font-weight:600;cursor:pointer;width:auto}
+.mini-btn:hover{border-color:var(--blue);color:var(--blue)}
+.table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;background:#fff}
+.preview-table{width:max-content;min-width:100%;border-collapse:collapse;font-size:.84rem}
+.preview-table th,.preview-table td{padding:8px 12px;border-right:1px solid #edf0f4;border-bottom:1px solid #edf0f4;text-align:left;vertical-align:top;max-width:220px;min-width:110px}
+.preview-table th:last-child,.preview-table td:last-child{border-right:0}
+.preview-table tr:last-child th,.preview-table tr:last-child td{border-bottom:0}
+.preview-table .row-label{position:sticky;left:0;z-index:2;background:#f1f5f9;font-weight:700;color:#334155;min-width:92px;max-width:92px;border-right:2px solid var(--line)}
+.chk-cell{background:#f8fafc}
+.num-chk-label{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--ink);cursor:pointer;user-select:none;white-space:nowrap}
+.num-chk-label input{width:16px;height:16px;margin:0;accent-color:var(--blue);cursor:pointer}
+.hdr-cell{font-weight:700;color:var(--ink);background:#fff;word-break:break-all}
+.sample-cell{color:var(--muted);background:#fff;word-break:break-all;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.empty-tag{color:#94a3b8;font-style:italic;font-weight:400}
+
+button.primary-btn{width:100%;padding:14px 18px;border:0;border-radius:10px;background:var(--blue);color:white;font-size:1rem;font-weight:700;cursor:pointer}
+button.primary-btn:disabled{background:#aab4c3;cursor:not-allowed}
 #status{min-height:1.5em;margin:14px 0 0;font-size:.9rem;font-weight:600;color:#067647;overflow-wrap:anywhere}
 #status.error{color:#b42318}
 .note{border-top:1px solid #edf0f4;margin-top:22px;padding-top:14px;font-size:.8rem}
@@ -36,7 +55,7 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
 <body>
 <main>
   <h1>XLSX → CSV / JSON 変換</h1>
-  <p>Excelファイルの最初のシートをCSVまたはJSONに変換します。データ途中の空白行・空白列は維持し、末尾の空白行・空白列だけを除外します。</p>
+  <p>Excelファイルの最初のシートを読み込み、ヘッダーと1行目のプレビューを確認しながらCSVまたはJSONに変換します。基本はテキストとして扱い、「数値」にチェックを入れた列だけ数値として出力します。</p>
   <label class="drop" id="drop">
     <strong>Excelファイルを選択</strong>
     <span id="fileName">.xlsx ファイルを指定してください</span>
@@ -55,19 +74,26 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
         <span>JSON (.json)</span>
       </label>
     </div>
+  </div>
 
-    <div class="json-type-wrap" id="jsonTypeWrap">
-      <label class="opt-label" for="jsonType">JSON変換ルール（Actions互換）</label>
-      <select id="jsonType">
-        <option value="auto">自動判別（ファイル名・列名から自動選択）</option>
-        <option value="location">location形式（convert_location.js）</option>
-        <option value="fish">fish形式（convert_fish.js）</option>
-        <option value="shop">shop形式（convert_shop.js）</option>
-      </select>
+  <div class="preview-box" id="previewBox">
+    <div class="preview-head">
+      <div>
+        <span class="opt-label" style="margin-bottom:2px">列プレビュー＆数値指定（横スクロール可）</span>
+        <span class="preview-sub" id="previewMeta">チェックした列は数値扱い、未チェックはテキスト扱いになります</span>
+      </div>
+      <div class="preview-actions">
+        <button type="button" class="mini-btn" id="clearAllNumBtn">すべて解除</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="preview-table">
+        <tbody id="previewTbody"></tbody>
+      </table>
     </div>
   </div>
 
-  <button id="convert" disabled>CSVに変換してダウンロード</button>
+  <button id="convert" class="primary-btn" disabled>CSVに変換してダウンロード</button>
   <p id="status" role="status" aria-live="polite"></p>
   <p class="note">変換はブラウザ内で行います。選択したExcelファイルは変換のために外部サーバーへ送信されません。CSV/JSONはUTF-8（BOMなし）です。</p>
 </main>
@@ -80,10 +106,13 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
   const button = document.getElementById('convert');
   const status = document.getElementById('status');
   const formatRadios = document.querySelectorAll('input[name="outputFormat"]');
-  const jsonTypeWrap = document.getElementById('jsonTypeWrap');
-  const jsonTypeSelect = document.getElementById('jsonType');
+  const previewBox = document.getElementById('previewBox');
+  const previewTbody = document.getElementById('previewTbody');
+  const previewMeta = document.getElementById('previewMeta');
+  const clearAllNumBtn = document.getElementById('clearAllNumBtn');
 
   let selectedFile = null;
+  let parsedSheetData = null; // { rows, maxCols, lastNonEmptyRowIndex }
 
   function setStatus(message, isError = false) {
     status.textContent = message;
@@ -97,7 +126,6 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
 
   function updateFormatUI() {
     const fmt = getSelectedFormat();
-    jsonTypeWrap.classList.toggle('active', fmt === 'json');
     button.textContent = fmt === 'json' ? 'JSONに変換してダウンロード' : 'CSVに変換してダウンロード';
     setStatus('');
   }
@@ -106,22 +134,14 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
     radio.addEventListener('change', updateFormatUI);
   });
 
-  fileInput.addEventListener('change', () => {
-    selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-    fileName.textContent = selectedFile ? selectedFile.name : '.xlsx ファイルを指定してください';
-    drop.classList.toggle('has-file', !!selectedFile);
-    button.disabled = !selectedFile;
-    setStatus('');
-  });
-
-  // PHP版のファイル名処理に合わせ、パス部分と末尾の拡張子を取り除く
+  // パス部分と末尾の拡張子を取り除く
   function makeOutputName(originalName, ext) {
     const base = originalName.replace(/^.*[\\/]/u, '');
     const withoutExt = base.replace(/\.[^.]*$/u, '');
     return (withoutExt.trim() ? withoutExt : 'converted') + '.' + ext;
   }
 
-  // PHP fputcsv() の既定 escape "\" に合わせたCSVフィールド化（現行仕様維持）
+  // PHP fputcsv() の既定 escape "\" に合わせたCSVフィールド化
   function csvField(value) {
     let s = value == null ? '' : String(value);
     if (/[,"\r\n\\]/.test(s)) {
@@ -131,186 +151,215 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
     return s;
   }
 
-  // PHP版（SimpleXLSX::rows()）と同様に、表示書式による丸めや桁区切りカンマ混入を防ぐため生データ(cell.v)を基本とする
-  function cellText(cell) {
-    if (!cell || cell.v == null) return '';
+  // セル取得：数値チェックのON/OFFに使えるよう生値(raw)と表示テキスト(text)の両方を保持
+  function extractCellObj(cell) {
+    if (!cell || cell.v == null) {
+      return { raw: '', text: '' };
+    }
+    let rawStr = '';
     if (cell.t === 'n') {
-      return String(cell.v);
+      rawStr = String(cell.v);
+    } else if (cell.t === 'b') {
+      rawStr = cell.v ? '1' : '0';
+    } else {
+      rawStr = String(cell.v);
     }
-    if (cell.t === 'b') {
-      return cell.v ? '1' : '0';
-    }
-    return String(cell.v);
-  }
+    rawStr = rawStr.replace(/\r\n|\r|\n/g, ' ');
 
-  // ファイル名またはヘッダー行からJSON変換タイプを自動判別
-  function detectJsonType(originalName, headers) {
-    const lowerName = (originalName || '').toLowerCase();
-    const headerSet = new Set(headers.map(h => h.trim()));
-
-    if (headerSet.has('registration') && headerSet.has('parent')) {
-      return 'fish';
-    }
-    if (headerSet.has('individualId') || headerSet.has('areaId')) {
-      return 'location';
-    }
-    if (lowerName.includes('fish')) return 'fish';
-    if (lowerName.includes('location')) return 'location';
-    if (lowerName.includes('shop')) return 'shop';
-
-    return 'shop';
-  }
-
-  // 1. convert_location.js 互換ロジック
-  function convertLocationCsvToJson(csvData) {
-    const lines = csvData.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
-    if (lines.length < 2) return { json: '[]', count: 0 };
-
-    const allRows = lines.slice(1).map(line => {
-      const cols = line.split(',');
-      return {
-        name: cols[0]?.trim() || undefined,
-        zoom: cols[1]?.trim() ? parseFloat(cols[1]) : undefined,
-        individualId: cols[2]?.trim() || undefined,
-        lat: cols[3]?.trim() ? parseFloat(cols[3]) : undefined,
-        lng: cols[4]?.trim() ? parseFloat(cols[4]) : undefined,
-        areaId: cols[5]?.trim() || undefined,
-        url: cols[6]?.trim() || undefined,
-        notes: cols[7]?.trim() || undefined,
-        icon: cols[8]?.trim() ? cols[8].trim().toLowerCase() : undefined,
-        whether: cols[9]?.trim() || undefined,
-        type: cols[10]?.trim() || undefined
-      };
-    });
+    let textStr = cell.w !== undefined ? String(cell.w) : rawStr;
+    textStr = textStr.replace(/\r\n|\r|\n/g, ' ');
 
     return {
-      json: JSON.stringify(allRows, null, 2),
-      count: allRows.length
+      raw: rawStr,
+      text: rawStr // 基本は桁落ちのない生データをベースにしつつ、型変換時にチェック有無で制御
     };
   }
 
-  // 2. convert_fish.js 互換ロジック
-  function convertFishCsvToJson(csvData) {
-    const lines = csvData.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
-    if (lines.length < 2) return { json: '{}', count: 0 };
-
-    const headers = lines[0].split(',').map(h => h.trim());
-    const regIdx = headers.indexOf('registration');
-    const parentIdx = headers.indexOf('parent');
-    const nameIdx = headers.indexOf('name');
-    const latIdx = headers.indexOf('lat');
-    const lngIdx = headers.indexOf('lng');
-
-    if (regIdx === -1 || parentIdx === -1 || nameIdx === -1 || latIdx === -1 || lngIdx === -1) {
-      throw new Error('fish形式に必要な必須列（registration, parent, name, lat, lng）が見つかりません。');
+  // Excelシートを解析して内部データ化
+  async function parseExcelFile(file) {
+    if (!window.XLSX) {
+      throw new Error('Excel解析ライブラリを読み込めませんでした。通信環境を確認してください。');
+    }
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: 'array', cellDates: false });
+    if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+      throw new Error('Excelファイルにシートがありません。');
     }
 
-    const extraColumns = [];
-    headers.forEach((h, idx) => {
-      if (h && !['registration', 'parent', 'name', 'lat', 'lng'].includes(h)) {
-        extraColumns.push({ name: h, index: idx });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    if (!sheet || !sheet['!ref']) {
+      return { rows: [], maxCols: 0, lastNonEmptyRowIndex: -1 };
+    }
+
+    const range = XLSX.utils.decode_range(sheet['!ref']);
+    let maxCols = 0;
+    let lastNonEmptyRowIndex = -1;
+    const rows = [];
+
+    for (let r = 0; r <= range.e.r; r++) {
+      const row = [];
+      let rowHasValue = false;
+      for (let c = 0; c <= range.e.c; c++) {
+        const address = XLSX.utils.encode_cell({ r, c });
+        const cell = sheet[address];
+        const cellObj = extractCellObj(cell);
+        row[c] = cellObj;
+        if (cellObj.raw.trim() !== '') {
+          rowHasValue = true;
+          if (c + 1 > maxCols) maxCols = c + 1;
+        }
       }
-    });
+      rows[r] = row;
+      if (rowHasValue) lastNonEmptyRowIndex = r;
+    }
 
-    const resultData = {};
-    let validRows = 0;
+    return { rows, maxCols, lastNonEmptyRowIndex };
+  }
 
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
+  // 横スクロール対応の3段プレビュー（数値チェック / ヘッダー / 1行目データ）を描画
+  function renderPreview(sheetData) {
+    previewTbody.innerHTML = '';
 
-      const cols = lines[i].split(',');
-      const reg = cols[regIdx] ? cols[regIdx].trim() : '';
-      const parent = cols[parentIdx] ? cols[parentIdx].trim() : '';
-      const fishName = cols[nameIdx] ? cols[nameIdx].trim() : '';
-      const lat = cols[latIdx] ? cols[latIdx].trim() : '';
-      const lng = cols[lngIdx] ? cols[lngIdx].trim() : '';
+    if (!sheetData || sheetData.lastNonEmptyRowIndex < 0 || sheetData.maxCols <= 0) {
+      previewBox.classList.remove('active');
+      return;
+    }
 
-      if (!reg || !parent || !fishName || !lat || !lng) continue;
+    const { rows, maxCols, lastNonEmptyRowIndex } = sheetData;
+    const headerRow = rows[0] || [];
+    const firstDataRow = lastNonEmptyRowIndex >= 1 ? (rows[1] || []) : [];
 
-      if (!resultData[reg]) {
-        resultData[reg] = {};
-      }
-      if (!resultData[reg][parent]) {
-        resultData[reg][parent] = {};
-      }
-      if (!resultData[reg][parent][fishName]) {
-        resultData[reg][parent][fishName] = {
-          coords: ''
-        };
-      }
+    // 1段目: ⬜︎ 数値 チェックボックス行
+    const trCheck = document.createElement('tr');
+    const thCheck = document.createElement('th');
+    thCheck.className = 'row-label';
+    thCheck.textContent = '型指定';
+    trCheck.appendChild(thCheck);
 
-      const coordString = `${lat},${lng}`;
-      if (resultData[reg][parent][fishName].coords === '') {
-        resultData[reg][parent][fishName].coords = coordString;
+    // 2段目: ヘッダー行（Excel 1行目）
+    const trHeader = document.createElement('tr');
+    const thHeader = document.createElement('th');
+    thHeader.className = 'row-label';
+    thHeader.textContent = 'ヘッダー';
+    trHeader.appendChild(thHeader);
+
+    // 3段目: データ1行目（Excel 2行目）
+    const trSample = document.createElement('tr');
+    const thSample = document.createElement('th');
+    thSample.className = 'row-label';
+    thSample.textContent = '1行目データ';
+    trSample.appendChild(thSample);
+
+    for (let c = 0; c < maxCols; c++) {
+      // チェックボックスセル（初期値はすべて未チェック＝テキスト扱い）
+      const tdChk = document.createElement('td');
+      tdChk.className = 'chk-cell';
+      const label = document.createElement('label');
+      label.className = 'num-chk-label';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.className = 'col-num-check';
+      input.dataset.colIndex = String(c);
+      const span = document.createElement('span');
+      span.textContent = '数値';
+      label.appendChild(input);
+      label.appendChild(span);
+      tdChk.appendChild(label);
+      trCheck.appendChild(tdChk);
+
+      // ヘッダーセル
+      const tdHdr = document.createElement('td');
+      tdHdr.className = 'hdr-cell';
+      const hdrText = headerRow[c] ? headerRow[c].raw.trim() : '';
+      if (hdrText !== '') {
+        tdHdr.textContent = hdrText;
       } else {
-        resultData[reg][parent][fishName].coords += `|${coordString}`;
+        const emptyEl = document.createElement('span');
+        emptyEl.className = 'empty-tag';
+        emptyEl.textContent = `(列${c + 1} 空欄)`;
+        tdHdr.appendChild(emptyEl);
       }
+      trHeader.appendChild(tdHdr);
 
-      extraColumns.forEach(ext => {
-        const val = cols[ext.index] ? cols[ext.index].trim() : '';
-        if (val !== '') {
-          if (resultData[reg][parent][fishName][ext.name] === undefined) {
-            resultData[reg][parent][fishName][ext.name] = isNaN(val) ? val : Number(val);
-          }
-        }
-      });
-
-      validRows++;
+      // 1行目データセル
+      const tdSmp = document.createElement('td');
+      tdSmp.className = 'sample-cell';
+      const smpText = firstDataRow[c] ? firstDataRow[c].raw : '';
+      if (smpText !== '') {
+        tdSmp.textContent = smpText;
+      } else {
+        const emptyEl = document.createElement('span');
+        emptyEl.className = 'empty-tag';
+        emptyEl.textContent = '(空欄)';
+        tdSmp.appendChild(emptyEl);
+      }
+      trSample.appendChild(tdSmp);
     }
 
-    return {
-      json: JSON.stringify(resultData, null, 2),
-      count: validRows
-    };
+    previewTbody.appendChild(trCheck);
+    previewTbody.appendChild(trHeader);
+    previewTbody.appendChild(trSample);
+
+    const dataRowCount = Math.max(0, lastNonEmptyRowIndex);
+    previewMeta.textContent = `全 ${maxCols} 列 / データ ${dataRowCount} 行（チェックした列のみ数値として処理します）`;
+    previewBox.classList.add('active');
   }
 
-  // 3. convert_shop.js 互換ロジック
-  function convertShopCsvToJson(csvData) {
-    const lines = csvData.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
-    if (lines.length < 2) {
-      throw new Error('データがありません。');
+  clearAllNumBtn.addEventListener('click', () => {
+    document.querySelectorAll('.col-num-check').forEach(chk => {
+      chk.checked = false;
+    });
+  });
+
+  fileInput.addEventListener('change', async () => {
+    selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+    fileName.textContent = selectedFile ? selectedFile.name : '.xlsx ファイルを指定してください';
+    drop.classList.toggle('has-file', !!selectedFile);
+    button.disabled = true;
+    parsedSheetData = null;
+    setStatus('');
+
+    if (!selectedFile) {
+      previewBox.classList.remove('active');
+      return;
     }
 
-    const headers = lines[0].split(',').map(h => h.trim());
-    const allRows = [];
+    try {
+      setStatus('ファイルを読み込み中です…');
+      parsedSheetData = await parseExcelFile(selectedFile);
+      renderPreview(parsedSheetData);
+      button.disabled = false;
+      setStatus('');
+    } catch (error) {
+      previewBox.classList.remove('active');
+      setStatus('❌ エラー: ' + (error && error.message ? error.message : 'ファイルの解析に失敗しました。'), true);
+    }
+  });
 
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      const cols = lines[i].split(',');
-      const rowObj = {};
-
-      headers.forEach((header, index) => {
-        if (header && cols[index] && cols[index].trim() !== '') {
-          const val = cols[index].trim();
-          if (header === 'lat' || header === 'lng') {
-            const num = parseFloat(val);
-            if (!isNaN(num)) {
-              rowObj[header] = num;
-            }
-          } else {
-            rowObj[header] = val;
-          }
-        }
-      });
-
-      if (Object.keys(rowObj).length > 0) {
-        allRows.push(rowObj);
+  // 各列の「数値」チェック状態を取得
+  function getNumericColumnFlags(maxCols) {
+    const flags = new Array(maxCols).fill(false);
+    document.querySelectorAll('.col-num-check').forEach(chk => {
+      const idx = Number(chk.dataset.colIndex);
+      if (Number.isInteger(idx) && idx >= 0 && idx < maxCols) {
+        flags[idx] = chk.checked;
       }
-    }
+    });
+    return flags;
+  }
 
-    return {
-      json: JSON.stringify(allRows, null, 2),
-      count: allRows.length
-    };
+  // 文字列を数値へ変換（カンマ除去対応・変換不能な場合は元の文字列にフォールバック）
+  function toNumericIfPossible(rawVal) {
+    const trimmed = String(rawVal).trim();
+    if (trimmed === '') return '';
+    const normalized = trimmed.replace(/,/g, '');
+    const num = Number(normalized);
+    return Number.isFinite(num) ? num : trimmed;
   }
 
   button.addEventListener('click', async () => {
-    if (!selectedFile) {
+    if (!selectedFile || !parsedSheetData) {
       setStatus('❌ エラー: ファイルを選択してください。', true);
-      return;
-    }
-    if (!window.XLSX) {
-      setStatus('❌ エラー: Excel解析ライブラリを読み込めませんでした。通信環境を確認してください。', true);
       return;
     }
 
@@ -319,14 +368,9 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
     setStatus('変換中です…');
 
     try {
-      const buffer = await selectedFile.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: 'array', cellDates: false });
-      if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-        throw new Error('Excelファイルにシートがありません。');
-      }
+      const { rows, maxCols, lastNonEmptyRowIndex } = parsedSheetData;
 
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      if (!sheet || !sheet['!ref']) {
+      if (lastNonEmptyRowIndex < 0 || maxCols <= 0) {
         const emptyContent = format === 'json' ? '[]' : '';
         const mimeType = format === 'json' ? 'application/json;charset=utf-8' : 'text/csv;charset=utf-8';
         setStatus('データがありません。空のファイルを出力します。');
@@ -335,71 +379,69 @@ button:disabled{background:#aab4c3;cursor:not-allowed}
         return;
       }
 
-      const range = XLSX.utils.decode_range(sheet['!ref']);
-      let maxCols = 0;
-      let lastNonEmptyRowIndex = -1;
-      const rows = [];
+      const numFlags = getNumericColumnFlags(maxCols);
 
-      // 先頭行(r=0)・先頭列(c=0)が空欄の場合でも列ズレが起きないよう必ず 0 から走査する
-      for (let r = 0; r <= range.e.r; r++) {
-        const row = [];
-        let rowHasValue = false;
-        for (let c = 0; c <= range.e.c; c++) {
-          const address = XLSX.utils.encode_cell({ r, c });
-          const cell = sheet[address];
-          const value = cellText(cell);
-          row[c] = value;
-          if (value.trim() !== '') {
-            rowHasValue = true;
-            if (c + 1 > maxCols) maxCols = c + 1;
-          }
-        }
-        rows[r] = row;
-        if (rowHasValue) lastNonEmptyRowIndex = r;
-      }
-
-      const output = [];
-      if (lastNonEmptyRowIndex >= 0 && maxCols > 0) {
+      if (format === 'csv') {
+        const output = [];
         for (let r = 0; r <= lastNonEmptyRowIndex; r++) {
           const sourceRow = rows[r] || [];
           const cleanRow = [];
           for (let c = 0; c < maxCols; c++) {
-            let cell = sourceRow[c] === undefined ? '' : sourceRow[c];
-            if (typeof cell === 'string') cell = cell.replace(/\r\n|\r|\n/g, ' ');
-            cleanRow.push(cell);
+            const cellObj = sourceRow[c];
+            let val = cellObj ? cellObj.raw : '';
+            // 1行目(r=0)はヘッダーなのでそのまま出力、2行目以降で「数値」チェックONならプレーンな数値文字列に正規化
+            if (r >= 1 && numFlags[c] && val.trim() !== '') {
+              const numVal = toNumericIfPossible(val);
+              val = String(numVal);
+            }
+            cleanRow.push(val);
           }
           output.push(cleanRow.map(csvField).join(','));
         }
-      }
 
-      const csv = output.length ? output.join('\r\n') + '\r\n' : '';
-
-      if (format === 'csv') {
+        const csv = output.length ? output.join('\r\n') + '\r\n' : '';
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
         downloadBlob(blob, makeOutputName(selectedFile.name, 'csv'));
         setStatus('変換が完了しました。CSVをダウンロードしました。');
       } else {
-        const firstRowHeaders = (rows[0] || []).slice(0, maxCols);
-        const selectedType = jsonTypeSelect.value;
-        const resolvedType = selectedType === 'auto'
-          ? detectJsonType(selectedFile.name, firstRowHeaders)
-          : selectedType;
-
-        let result;
-        if (resolvedType === 'location') {
-          result = convertLocationCsvToJson(csv);
-        } else if (resolvedType === 'fish') {
-          result = convertFishCsvToJson(csv);
-        } else {
-          result = convertShopCsvToJson(csv);
+        // JSON汎用変換：元ファイルの1行目ヘッダーを忠実にキーとして使用
+        const headerRow = rows[0] || [];
+        const headers = [];
+        for (let c = 0; c < maxCols; c++) {
+          headers[c] = headerRow[c] ? headerRow[c].raw.trim() : '';
         }
 
-        const blob = new Blob([result.json], { type: 'application/json;charset=utf-8' });
+        const allRows = [];
+        for (let r = 1; r <= lastNonEmptyRowIndex; r++) {
+          const sourceRow = rows[r] || [];
+          const rowObj = {};
+
+          for (let c = 0; c < maxCols; c++) {
+            const key = headers[c];
+            if (!key) continue; // ヘッダーが空欄の列はスキップ
+
+            const rawVal = sourceRow[c] ? sourceRow[c].raw.trim() : '';
+            if (rawVal === '') continue; // 値が空欄のセルはキーを出力しない
+
+            if (numFlags[c]) {
+              rowObj[key] = toNumericIfPossible(rawVal);
+            } else {
+              rowObj[key] = rawVal;
+            }
+          }
+
+          if (Object.keys(rowObj).length > 0) {
+            allRows.push(rowObj);
+          }
+        }
+
+        const jsonStr = JSON.stringify(allRows, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
         downloadBlob(blob, makeOutputName(selectedFile.name, 'json'));
-        setStatus(`変換が完了しました（${resolvedType}形式・${result.count}件）。JSONをダウンロードしました。`);
+        setStatus(`変換が完了しました（${allRows.length}件）。JSONをダウンロードしました。`);
       }
     } catch (error) {
-      setStatus('❌ エラー: 解析・変換に失敗しました。' + (error && error.message ? ' 詳細: ' + error.message : ''), true);
+      setStatus('❌ エラー: 変換に失敗しました。' + (error && error.message ? ' 詳細: ' + error.message : ''), true);
     } finally {
       button.disabled = !selectedFile;
     }
