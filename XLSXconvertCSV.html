@@ -30,19 +30,21 @@ input[type=file]{display:block;width:100%;margin-top:14px;font-size:.9rem}
 .preview-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .preview-sub{font-size:.8rem;color:var(--muted)}
 .preview-actions{display:flex;gap:6px}
-.mini-btn{padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-size:.78rem;font-weight:600;cursor:pointer;width:auto}
+.mini-btn{padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font-size:.8rem;font-weight:600;cursor:pointer;width:auto}
 .mini-btn:hover{border-color:var(--blue);color:var(--blue)}
 .table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;background:#fff}
-.preview-table{width:max-content;min-width:100%;border-collapse:collapse;font-size:.84rem}
-.preview-table th,.preview-table td{padding:8px 12px;border-right:1px solid #edf0f4;border-bottom:1px solid #edf0f4;text-align:left;vertical-align:top;max-width:220px;min-width:110px}
+.preview-table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;font-size:.84rem}
+.preview-table th,.preview-table td{padding:9px 12px;border-right:1px solid #edf0f4;border-bottom:1px solid #edf0f4;text-align:left;vertical-align:top;min-width:115px;max-width:220px}
 .preview-table th:last-child,.preview-table td:last-child{border-right:0}
 .preview-table tr:last-child th,.preview-table tr:last-child td{border-bottom:0}
-.preview-table .row-label{position:sticky;left:0;z-index:2;background:#f1f5f9;font-weight:700;color:#334155;min-width:92px;max-width:92px;border-right:2px solid var(--line)}
+.preview-table .row-label{position:sticky;left:0;z-index:2;background:#f1f5f9;font-weight:700;color:#334155;min-width:96px;max-width:96px;white-space:nowrap;border-right:2px solid var(--line)}
 .chk-cell{background:#f8fafc}
 .num-chk-label{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--ink);cursor:pointer;user-select:none;white-space:nowrap}
 .num-chk-label input{width:16px;height:16px;margin:0;accent-color:var(--blue);cursor:pointer}
 .hdr-cell{font-weight:700;color:var(--ink);background:#fff;word-break:break-all}
-.sample-cell{color:var(--muted);background:#fff;word-break:break-all;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sample-cell{color:var(--muted);background:#fff}
+/* td自体にdisplay:-webkit-boxを当てるとテーブルセル構造が壊れて縦並びになるため、内部divに適用する */
+.cell-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all;line-height:1.45}
 .empty-tag{color:#94a3b8;font-style:italic;font-weight:400}
 
 button.primary-btn{width:100%;padding:14px 18px;border:0;border-radius:10px;background:var(--blue);color:white;font-size:1rem;font-weight:700;cursor:pointer}
@@ -151,10 +153,10 @@ button.primary-btn:disabled{background:#aab4c3;cursor:not-allowed}
     return s;
   }
 
-  // セル取得：数値チェックのON/OFFに使えるよう生値(raw)と表示テキスト(text)の両方を保持
+  // セル取得：数値チェックのON/OFFに使えるよう生値(raw)を取得
   function extractCellObj(cell) {
     if (!cell || cell.v == null) {
-      return { raw: '', text: '' };
+      return { raw: '' };
     }
     let rawStr = '';
     if (cell.t === 'n') {
@@ -166,13 +168,7 @@ button.primary-btn:disabled{background:#aab4c3;cursor:not-allowed}
     }
     rawStr = rawStr.replace(/\r\n|\r|\n/g, ' ');
 
-    let textStr = cell.w !== undefined ? String(cell.w) : rawStr;
-    textStr = textStr.replace(/\r\n|\r|\n/g, ' ');
-
-    return {
-      raw: rawStr,
-      text: rawStr // 基本は桁落ちのない生データをベースにしつつ、型変換時にチェック有無で制御
-    };
+    return { raw: rawStr };
   }
 
   // Excelシートを解析して内部データ化
@@ -270,29 +266,35 @@ button.primary-btn:disabled{background:#aab4c3;cursor:not-allowed}
       // ヘッダーセル
       const tdHdr = document.createElement('td');
       tdHdr.className = 'hdr-cell';
+      const hdrWrap = document.createElement('div');
+      hdrWrap.className = 'cell-clamp';
       const hdrText = headerRow[c] ? headerRow[c].raw.trim() : '';
       if (hdrText !== '') {
-        tdHdr.textContent = hdrText;
+        hdrWrap.textContent = hdrText;
       } else {
         const emptyEl = document.createElement('span');
         emptyEl.className = 'empty-tag';
         emptyEl.textContent = `(列${c + 1} 空欄)`;
-        tdHdr.appendChild(emptyEl);
+        hdrWrap.appendChild(emptyEl);
       }
+      tdHdr.appendChild(hdrWrap);
       trHeader.appendChild(tdHdr);
 
-      // 1行目データセル
+      // 1行目データセル（tdではなく内部のdivに省略表示を適用してセル構造を維持）
       const tdSmp = document.createElement('td');
       tdSmp.className = 'sample-cell';
+      const smpWrap = document.createElement('div');
+      smpWrap.className = 'cell-clamp';
       const smpText = firstDataRow[c] ? firstDataRow[c].raw : '';
       if (smpText !== '') {
-        tdSmp.textContent = smpText;
+        smpWrap.textContent = smpText;
       } else {
         const emptyEl = document.createElement('span');
         emptyEl.className = 'empty-tag';
         emptyEl.textContent = '(空欄)';
-        tdSmp.appendChild(emptyEl);
+        smpWrap.appendChild(emptyEl);
       }
+      tdSmp.appendChild(smpWrap);
       trSample.appendChild(tdSmp);
     }
 
@@ -389,7 +391,6 @@ button.primary-btn:disabled{background:#aab4c3;cursor:not-allowed}
           for (let c = 0; c < maxCols; c++) {
             const cellObj = sourceRow[c];
             let val = cellObj ? cellObj.raw : '';
-            // 1行目(r=0)はヘッダーなのでそのまま出力、2行目以降で「数値」チェックONならプレーンな数値文字列に正規化
             if (r >= 1 && numFlags[c] && val.trim() !== '') {
               const numVal = toNumericIfPossible(val);
               val = String(numVal);
@@ -418,10 +419,10 @@ button.primary-btn:disabled{background:#aab4c3;cursor:not-allowed}
 
           for (let c = 0; c < maxCols; c++) {
             const key = headers[c];
-            if (!key) continue; // ヘッダーが空欄の列はスキップ
+            if (!key) continue;
 
             const rawVal = sourceRow[c] ? sourceRow[c].raw.trim() : '';
-            if (rawVal === '') continue; // 値が空欄のセルはキーを出力しない
+            if (rawVal === '') continue;
 
             if (numFlags[c]) {
               rowObj[key] = toNumericIfPossible(rawVal);
