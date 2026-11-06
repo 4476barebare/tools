@@ -35,12 +35,12 @@ i.c{color:var(--c)}i.s{color:var(--s)}i.v{color:var(--v)}i.k{color:var(--k);font
 #chat{margin:8px;border:1px solid var(--line);background:var(--pane);border-radius:18px;padding:4px 6px 6px 14px}
 .bar{display:flex;align-items:center;gap:8px;min-height:36px}
 #chip{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#min{width:36px;height:36px;border:0;background:transparent;font-size:16px;transition:transform .2s}
+#min{transition:transform .2s}
 #chat.min #min{transform:rotate(180deg)}
 .row{display:flex;align-items:flex-end;gap:8px;padding-bottom:2px}
-#ct{flex:1;min-width:0;height:84px;resize:none;border:0;outline:0;padding:0;background:transparent;color:var(--ink);font:16px/1.5 "M PLUS 1 Code",ui-monospace,monospace;white-space:pre;overflow:auto}
+#ct{flex:1;min-width:0;height:var(--ch,84px);transition:height .2s;resize:none;border:0;outline:0;padding:0;background:transparent;color:var(--ink);font:16px/1.5 "M PLUS 1 Code",ui-monospace,monospace;white-space:pre;overflow:auto}
 #ct::placeholder{color:var(--mute)}
-#go{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--acc);color:var(--onacc);font-size:22px;font-weight:700}
+#go{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--acc);color:var(--onacc);font-size:22px;font-weight:700}
 .rw{display:grid;grid-template-rows:1fr;transition:grid-template-rows .28s cubic-bezier(.3,.8,.3,1)}.rw>div{overflow:hidden;min-height:0;transition:opacity .2s}
 #chat.min .rw{grid-template-rows:0fr}#chat.min .rw>div{opacity:0;visibility:hidden;transition:opacity .15s,visibility 0s .28s}
 #scrim{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
@@ -58,7 +58,9 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
 .it .m small{color:var(--mute)}
 .it .x{width:36px;height:36px;border:0;background:transparent;color:var(--mute)}
 .empty{color:var(--mute);padding:8px 4px}
-#un,#re{width:36px;height:36px;border:0;background:transparent;font-size:18px}#un:disabled,#re:disabled{opacity:.3}
+.ib{flex:none;width:38px;height:38px;border:0;border-radius:50%;display:grid;place-items:center;padding:0;background:rgba(120,140,200,.16);background:color-mix(in srgb,var(--acc) 11%,transparent);color:var(--acc);transition:transform .12s,opacity .2s}
+.ib svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib:active:not(:disabled){transform:scale(.9)}.ib:disabled{background:transparent;color:var(--mute);opacity:.4}
 #sb{display:none;align-items:center;gap:6px;padding:6px 10px;background:var(--pane);border-bottom:1px solid var(--line)}#sb.on{display:flex}
 #q{flex:1;min-width:0;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:16px "Zen Kaku Gothic New",system-ui,sans-serif;padding:0 10px;outline:0}
 #qn{font-size:12px;color:var(--mute);min-width:40px;text-align:right}#sb .b{min-height:38px;padding:0 10px}
@@ -68,6 +70,10 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
 .cr{display:inline-block;width:0;height:0;position:relative}.cr::after{content:"";position:absolute;left:-1px;top:-.95em;height:1.2em;border-left:2px solid var(--acc);animation:bl 1s steps(2,start) infinite}
 @keyframes bl{to{visibility:hidden}}
 #chip{cursor:pointer}
+#grip{display:flex;justify-content:center;padding:9px 0 3px;margin:0 -6px 0 -14px;touch-action:none;cursor:ns-resize}
+#grip i{width:38px;height:4px;border-radius:2px;background:var(--line)}
+#go svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#chat.drag #ct{transition:none}
 #fname{cursor:pointer}#fname::after{content:" ✎";color:var(--mute);font-weight:400}
 #open,#new,#save{min-height:42px}
 .two{display:flex;gap:8px}.two .b{flex:1}
@@ -95,10 +101,11 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
     <textarea id="ta" readonly inputmode="none" autocomplete="off" name="code-view" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off" aria-label="コード（選択のみ）"></textarea>
   </main>
   <section id="chat">
-    <div class="bar"><span id="chip"></span><button id="un" aria-label="元に戻す">↶</button><button id="re" aria-label="やり直す">↷</button><button id="min" aria-label="編集欄を最小化">▾</button></div>
+    <div id="grip" aria-label="編集欄の高さを変える"><i></i></div>
+    <div class="bar"><span id="chip"></span><button id="un" class="ib" aria-label="元に戻す"><svg viewBox="0 0 24 24"><path d="M8.5 5.5 4.5 9.5l4 4"/><path d="M5 9.5h9a4.5 4.5 0 0 1 0 9h-4"/></svg></button><button id="re" class="ib" aria-label="やり直す"><svg viewBox="0 0 24 24"><path d="M15.5 5.5l4 4-4 4"/><path d="M19 9.5h-9a4.5 4.5 0 0 0 0 9h4"/></svg></button><button id="min" class="ib" aria-label="編集欄を最小化"><svg viewBox="0 0 24 24"><path d="m6.5 9.5 5.5 5.5 5.5-5.5"/></svg></button></div>
     <div class="rw"><div><div class="row">
       <textarea id="ct" autocomplete="off" name="code-edit" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off" placeholder="ここで編集して ↑ で本文に反映"></textarea>
-      <button id="go" aria-label="本文に反映">↑</button>
+      <button id="go" aria-label="本文に反映"><svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg></button>
     </div></div></div>
   </section>
   <div id="scrim"></div>
@@ -178,6 +185,16 @@ $('#go').onclick=()=>{if(nameMode){renameDoc();return}const t=ct.value,v=ta.valu
   render();commit();sync();const c=chip.textContent;chip.textContent='反映しました ✓';setTimeout(()=>{if(chip.textContent.startsWith('反映'))chip.textContent=c},1200)};
 $('#min').onclick=()=>chat.classList.toggle('min');
 chip.onclick=()=>chat.classList.toggle('min');
+let lv=0;try{lv=Math.min(2,+localStorage.getItem('ed.lv')||0)}catch(e){}
+function chPx(i){return i===0?84:Math.round(document.documentElement.clientHeight*(i===1?.26:.46))}
+function setLv(i){lv=i;chat.style.setProperty('--ch',chPx(i)+'px');try{localStorage.setItem('ed.lv',i)}catch(e){}}
+const grip=$('#grip');let gy=0,gh=0,gm=false;
+grip.addEventListener('pointerdown',e=>{grip.setPointerCapture(e.pointerId);gy=e.clientY;gh=ct.offsetHeight;gm=false;chat.classList.add('drag')});
+grip.addEventListener('pointermove',e=>{if(!chat.classList.contains('drag'))return;const d=gy-e.clientY;if(Math.abs(d)>6)gm=true;if(!gm)return;chat.classList.remove('min');chat.style.setProperty('--ch',Math.max(60,Math.min(document.documentElement.clientHeight*.6,gh+d))+'px')});
+grip.addEventListener('pointerup',()=>{if(!chat.classList.contains('drag'))return;chat.classList.remove('drag');
+  if(gm){const h=ct.offsetHeight;let b=0;[1,2].forEach(i=>{if(Math.abs(chPx(i)-h)<Math.abs(chPx(b)-h))b=i});setLv(b)}
+  else if(chat.classList.contains('min'))chat.classList.remove('min');else setLv((lv+1)%3)});
+grip.addEventListener('pointercancel',()=>chat.classList.remove('drag'));
 function summ(o,n,k){const a=o.split('\n'),b=n.split('\n');let p=0;while(p<a.length&&p<b.length&&a[p]===b[p])p++;let s=0;while(s<a.length-p&&s<b.length-p&&a[a.length-1-s]===b[b.length-1-s])s++;const d=a.length-p-s,ad=b.length-p-s;return{t:Date.now(),l:p+1,a:ad,d:d,x:((ad>0?b[p]:a[p])||'').trim().slice(0,40),k:k.replace(/を編集$/,'')}}
 function commit(k){const o=cur.u[cur.i].c,n=ta.value;if(o===n)return;k=k||chip.textContent;cur.u=cur.u.slice(0,cur.i+1);cur.u.push({c:n,m:summ(o,n,k)});if(cur.u.length>50)cur.u.shift();cur.i=cur.u.length-1;touch();ur();hist()}
 function ur(){$('#un').disabled=cur.i<=0;$('#re').disabled=cur.i>=cur.u.length-1}
@@ -228,7 +245,7 @@ $('#fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileRea
   r.readAsText(f);e.target.value=''};
 const vv=window.visualViewport;if(vv){const f=()=>{document.documentElement.style.height=vv.height+'px';window.scrollTo(0,0)};vv.addEventListener('resize',f)}
 if(!H.length){H=[{id:Date.now(),n:'sample.html',c:SAMPLE,t:Date.now()}];persist()}
-setDoc(H[0]);chat.classList.add('min');
+setDoc(H[0]);setLv(lv);chat.classList.add('min');
 </script>
 </body>
 </html>
