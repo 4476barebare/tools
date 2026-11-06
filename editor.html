@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>コードエディタ</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1+Code:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
 <style>
@@ -16,7 +16,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font:14px/1.4 "Zen Kaku Gothic New",system-ui,sans-serif;overflow:hidden;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 "Zen Kaku Gothic New",system-ui,sans-serif;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%;position:fixed;top:0;left:0;right:0;height:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 #app{height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden}
 button{font:inherit;color:inherit;cursor:pointer}
 .b{border:1px solid var(--line);background:var(--pane);border-radius:10px;min-height:40px;padding:0 14px}
@@ -24,12 +24,12 @@ header{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(-
 #menu{width:44px;padding:0;font-size:20px}
 #fname{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
 main{position:relative;flex:1;min-height:0;background:var(--pane)}
-#sc,#mk,#hl,#ta{position:absolute;inset:0;margin:0;padding:8px 10px;border:0;font:12px/1.55 "M PLUS 1 Code",ui-monospace,monospace;white-space:pre;tab-size:2;letter-spacing:0}
+#sc,#mk,#hl,#ta{position:absolute;inset:0;margin:0;padding:8px 10px;border:0;font:var(--fs,12px)/1.55 "M PLUS 1 Code",ui-monospace,monospace;white-space:pre;tab-size:2;letter-spacing:0}
 #sc,#mk,#hl{overflow:hidden;pointer-events:none;color:var(--ink)}
 #sc,#mk{color:transparent}mark{background:rgba(255,196,0,.4);color:transparent;border-radius:2px}mark.cu{background:rgba(255,140,0,.75)}
 #hl code,#mk code{font:inherit}
 #hl i{font-style:normal}
-#ta{overflow:auto;resize:none;outline:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--acc)}
+#ta{overflow:auto;overscroll-behavior:contain;resize:none;outline:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--acc)}
 #ta::selection{background:var(--selbg)}
 i.c{color:var(--c)}i.s{color:var(--s)}i.v{color:var(--v)}i.k{color:var(--k);font-weight:700}i.n{color:var(--n)}i.t{color:var(--t)}i.a{color:var(--a)}
 #chat{margin:8px;border:1px solid var(--line);background:var(--pane);border-radius:18px;padding:4px 6px 6px 14px}
@@ -74,6 +74,7 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
 #grip i{width:38px;height:4px;border-radius:2px;background:var(--line)}
 #go svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 #chat.drag #ct{transition:none}
+.zm{display:flex;gap:4px}.zm .b{min-width:40px;padding:0 8px;font-weight:700}.b:disabled{opacity:.35}
 #fname{cursor:pointer}#fname::after{content:" ✎";color:var(--mute);font-weight:400}
 #open,#new,#save{min-height:42px}
 .two{display:flex;gap:8px}.two .b{flex:1}
@@ -91,6 +92,7 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
   <header>
     <button class="b" id="menu" aria-label="ファイルの履歴を開く">☰</button>
     <div id="fname"></div>
+    <div class="zm"><button class="b" id="zo" aria-label="文字を小さく">A−</button><button class="b" id="zi" aria-label="文字を大きく">A+</button></div>
     <button class="b" id="sbtn">検索</button>
   </header>
   <div id="sb"><input id="q" type="search" autocomplete="off" name="code-find" enterkeyhint="search" placeholder="キーワード" autocapitalize="off" autocorrect="off"><span id="qn"></span><button class="b" id="pv" aria-label="前へ">▲</button><button class="b" id="nx" aria-label="次へ">▼</button><button class="b" id="sx" aria-label="検索を閉じる">✕</button></div>
@@ -195,6 +197,10 @@ grip.addEventListener('pointerup',()=>{if(!chat.classList.contains('drag'))retur
   if(gm){const h=ct.offsetHeight;let b=0;[1,2].forEach(i=>{if(Math.abs(chPx(i)-h)<Math.abs(chPx(b)-h))b=i});setLv(b)}
   else if(chat.classList.contains('min'))chat.classList.remove('min');else setLv((lv+1)%3)});
 grip.addEventListener('pointercancel',()=>chat.classList.remove('drag'));
+const ZS=[9,10.5,12,14,16];let zi=2;try{zi=+(localStorage.getItem('ed.z')??2)}catch(e){}
+function setZ(i){zi=Math.max(0,Math.min(4,i||0));document.documentElement.style.setProperty('--fs',ZS[zi]+'px');$('#zo').disabled=zi===0;$('#zi').disabled=zi===4;try{localStorage.setItem('ed.z',zi)}catch(e){}}
+$('#zo').onclick=()=>setZ(zi-1);$('#zi').onclick=()=>setZ(zi+1);
+['gesturestart','gesturechange','gestureend'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
 function summ(o,n,k){const a=o.split('\n'),b=n.split('\n');let p=0;while(p<a.length&&p<b.length&&a[p]===b[p])p++;let s=0;while(s<a.length-p&&s<b.length-p&&a[a.length-1-s]===b[b.length-1-s])s++;const d=a.length-p-s,ad=b.length-p-s;return{t:Date.now(),l:p+1,a:ad,d:d,x:((ad>0?b[p]:a[p])||'').trim().slice(0,40),k:k.replace(/を編集$/,'')}}
 function commit(k){const o=cur.u[cur.i].c,n=ta.value;if(o===n)return;k=k||chip.textContent;cur.u=cur.u.slice(0,cur.i+1);cur.u.push({c:n,m:summ(o,n,k)});if(cur.u.length>50)cur.u.shift();cur.i=cur.u.length-1;touch();ur();hist()}
 function ur(){$('#un').disabled=cur.i<=0;$('#re').disabled=cur.i>=cur.u.length-1}
@@ -243,9 +249,9 @@ $('#new').onclick=()=>{setDoc({id:Date.now(),n:'名称未設定.html',c:'',t:Dat
 $('#fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{const d={id:Date.now(),n:f.name,c:String(r.result),t:Date.now()};H=[d,...H];persist();setDoc(d);app.classList.remove('open')};
   r.readAsText(f);e.target.value=''};
-const vv=window.visualViewport;if(vv){const f=()=>{document.documentElement.style.height=vv.height+'px';window.scrollTo(0,0)};vv.addEventListener('resize',f)}
+const vv=window.visualViewport;if(vv){const f=()=>{document.body.style.height=vv.height+'px';document.body.style.top=vv.offsetTop+'px'};vv.addEventListener('resize',f);vv.addEventListener('scroll',f);f()}
 if(!H.length){H=[{id:Date.now(),n:'sample.html',c:SAMPLE,t:Date.now()}];persist()}
-setDoc(H[0]);setLv(lv);chat.classList.add('min');
+setZ(zi);setDoc(H[0]);setLv(lv);chat.classList.add('min');
 </script>
 </body>
 </html>
