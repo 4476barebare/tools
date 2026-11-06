@@ -86,14 +86,43 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
 .hh{font-size:13px;font-weight:700}.hh em{font-style:normal;color:var(--mute);font-weight:400}
 .hx{font:12px "M PLUS 1 Code",ui-monospace,monospace;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
+<style id="skin">
+:root{--bg:#f7f8fa;--pane:#fff;--ink:#0d0f12;--mute:#6b7280;--line:#e5e7eb;--acc:#2f64e6;--selbg:rgba(47,100,230,.22);--gl:rgba(255,255,255,.76);--glb:rgba(15,23,42,.08);--shd:0 8px 28px rgba(15,23,42,.10),0 1px 3px rgba(15,23,42,.06);--s:#3a8f55;--v:#1b7f8f;--k:#6d56c9;--n:#2f6fc0;--t:#c2416f;--a:#c9672b;--c:#9aa2ad}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101114;--pane:#17191e;--ink:#ececf1;--mute:#9ba1ad;--line:#2a2d34;--acc:#6c9bff;--gl:rgba(32,34,40,.74);--glb:rgba(255,255,255,.09);--shd:0 8px 28px rgba(0,0,0,.45);--selbg:rgba(108,155,255,.33)}}
+body{background:var(--pane)}
+#app{background:var(--bg)}
+#pg{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--pane);z-index:2;transition:transform .32s cubic-bezier(.3,.8,.3,1),border-radius .3s}
+#app.open #pg{transform:translateX(min(84vw,330px));border-radius:24px 0 0 24px;box-shadow:-12px 0 32px rgba(15,23,42,.14);overflow:hidden}
+header{position:absolute;top:8px;left:12px;right:12px;z-index:4;padding:0;background:none;border:0;pointer-events:none;gap:8px}
+header>*{pointer-events:auto}
+#menu,#sbtn,.zm,#fname,#sb{background:var(--gl);-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5);border:1px solid var(--glb);box-shadow:0 2px 10px rgba(15,23,42,.08)}
+#menu,#sbtn{width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;display:grid;place-items:center}
+#menu svg,#sbtn svg,.nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.zm{gap:0;border-radius:22px;overflow:hidden}.zm .b{border:0;border-radius:0;background:transparent;min-height:44px;min-width:42px;padding:0 6px;font-size:14px}.zm .b+.b{border-left:1px solid var(--glb)}
+#fname{flex:0 1 auto;min-width:0;margin:0 auto;max-width:44%;height:34px;line-height:32px;padding:0 12px;border-radius:17px;font-size:13px;text-align:center}
+#sb{position:absolute;top:60px;left:12px;right:12px;z-index:4;border-radius:22px;padding:6px 8px}
+#sc,#mk,#hl,#ta{padding:64px 14px 24px}
+#chat{margin:0 12px 10px;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shd);padding:2px 8px 8px 16px}
+#grip{margin:0 -8px 0 -16px;padding:8px 0 2px}
+#chip{flex:none;max-width:58%;margin-right:auto;padding:3px 10px;border-radius:999px;font-size:12px;color:var(--acc);background:rgba(47,100,230,.1);background:color-mix(in srgb,var(--acc) 11%,transparent)}#chip:empty{display:none}
+#drawer{z-index:1;transform:none;visibility:hidden;transition:visibility 0s .32s;background:var(--bg);border:0;padding:10px 12px;gap:2px}
+#app.open #drawer{visibility:visible;transition:none}
+#scrim{background:rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;border-radius:12px;padding:0 10px;min-height:46px;font-size:16px;text-align:left;color:var(--ink)}
+.nav:active{background:rgba(120,130,150,.15)}
+#open{background:transparent;color:var(--ink);font-weight:400}
+#rec{padding:0 10px 8px 44px}
+h2{margin:16px 10px 6px}
+.hi.cur{background:rgba(47,100,230,.09);background:color-mix(in srgb,var(--acc) 9%,transparent)}
+</style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <button class="b" id="menu" aria-label="ファイルの履歴を開く">☰</button>
+  <div id="pg"><header>
+    <button class="b" id="menu" aria-label="ファイルを開く"><svg viewBox="0 0 24 24"><path d="M4 8.5h16M4 15.5h9"/></svg></button>
     <div id="fname"></div>
     <div class="zm"><button class="b" id="zo" aria-label="文字を小さく">A−</button><button class="b" id="zi" aria-label="文字を大きく">A+</button></div>
-    <button class="b" id="sbtn">検索</button>
+    <button class="b" id="sbtn" aria-label="検索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>
   </header>
   <div id="sb"><input id="q" type="search" autocomplete="off" name="code-find" enterkeyhint="search" placeholder="キーワード" autocapitalize="off" autocorrect="off"><span id="qn"></span><button class="b" id="pv" aria-label="前へ">▲</button><button class="b" id="nx" aria-label="次へ">▼</button><button class="b" id="sx" aria-label="検索を閉じる">✕</button></div>
   <main>
@@ -110,12 +139,13 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
       <button id="go" aria-label="本文に反映"><svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg></button>
     </div></div></div>
   </section>
-  <div id="scrim"></div>
+  <div id="scrim"></div></div>
   <aside id="drawer">
-    <button class="b" id="open">開く</button>
+    <button class="b nav" id="open"><svg viewBox="0 0 24 24"><path d="M3.5 8a2 2 0 0 1 2-2h3.7l2 2.2h6.8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-12.5a2 2 0 0 1-2-2z"/></svg><span class="lb">開く</span></button>
     <div id="rec"></div>
     <input type="file" id="fi" accept=".js,.mjs,.json,.php,.html,.htm,.css,.txt,.md,text/*" hidden>
-    <div class="two"><button class="b" id="new">新規作成</button><button class="b" id="save">保存</button></div>
+    <button class="b nav" id="new"><svg viewBox="0 0 24 24"><path d="M7 3.5h6l4.5 4.5v11.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z"/><path d="M12 11v6M9 14h6"/></svg><span class="lb">新規作成</span></button>
+    <button class="b nav" id="save"><svg viewBox="0 0 24 24"><path d="M12 4.5v10M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg><span class="lb">保存</span></button>
     <h2>変更履歴（タップでその時点に戻る）</h2>
     <div id="hist"></div>
   </aside>
@@ -155,7 +185,7 @@ function scope(src,pos){const re=new RegExp(HTMLRE.source,'gi'),st=[];let best=n
 let H=[],cur,S={s:0,e:0},tm,nameMode=false;
 try{H=JSON.parse(localStorage.getItem('ed.h')||'[]')}catch(e){}
 const persist=()=>{const w=()=>localStorage.setItem('ed.h',JSON.stringify(H.slice(0,30)));try{w()}catch(e){try{H.forEach(x=>{if(x!==cur){x.u=[{c:x.c}];x.i=0}});w()}catch(e2){}}};
-const fl=(b,t)=>{const o=b.textContent;b.textContent=t;setTimeout(()=>b.textContent=o,1200)};
+const fl=(b,t)=>{const s=b.querySelector('.lb')||b,o=s.textContent;s.textContent=t;setTimeout(()=>s.textContent=o,1200)};
 const SAMPLE='<!DOCTYPE html>\n<html>\n<body>\n  <h1 class="title">こんにちは</h1>\n  <?php $name = "世界"; echo "Hello, $name"; ?>\n  <button id="btn">押す</button>\n  <script>\n    const b = document.querySelector(\'#btn\');\n    b.onclick = () => alert(\'clicked\'); // 例\n  <\/script>\n</body>\n</html>\n';
 function sy(){[pre,mkp,scp].forEach(p=>{p.scrollTop=ta.scrollTop;p.scrollLeft=ta.scrollLeft})}
 function render(){hl.innerHTML=paintAll(ta.value,cur.n)+'\n ';find();scRender();sy()}
