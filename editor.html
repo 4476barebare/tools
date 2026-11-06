@@ -87,17 +87,17 @@ h2{margin:6px 2px 0;font-size:13px;color:var(--mute)}
     <div id="fname"></div>
     <button class="b" id="sbtn">検索</button>
   </header>
-  <div id="sb"><input id="q" type="search" placeholder="キーワード" autocapitalize="off" autocorrect="off"><span id="qn"></span><button class="b" id="pv" aria-label="前へ">▲</button><button class="b" id="nx" aria-label="次へ">▼</button><button class="b" id="sx" aria-label="検索を閉じる">✕</button></div>
+  <div id="sb"><input id="q" type="search" autocomplete="off" name="code-find" enterkeyhint="search" placeholder="キーワード" autocapitalize="off" autocorrect="off"><span id="qn"></span><button class="b" id="pv" aria-label="前へ">▲</button><button class="b" id="nx" aria-label="次へ">▼</button><button class="b" id="sx" aria-label="検索を閉じる">✕</button></div>
   <main>
     <pre id="sc" aria-hidden="true"><code></code></pre>
     <pre id="mk" aria-hidden="true"><code></code></pre>
     <pre id="hl" aria-hidden="true"><code></code></pre>
-    <textarea id="ta" readonly inputmode="none" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off" aria-label="コード（選択のみ）"></textarea>
+    <textarea id="ta" readonly inputmode="none" autocomplete="off" name="code-view" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off" aria-label="コード（選択のみ）"></textarea>
   </main>
   <section id="chat">
     <div class="bar"><span id="chip"></span><button id="un" aria-label="元に戻す">↶</button><button id="re" aria-label="やり直す">↷</button><button id="min" aria-label="編集欄を最小化">▾</button></div>
     <div class="rw"><div><div class="row">
-      <textarea id="ct" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off" placeholder="ここで編集して ↑ で本文に反映"></textarea>
+      <textarea id="ct" autocomplete="off" name="code-edit" spellcheck="false" autocapitalize="off" autocorrect="off" wrap="off" placeholder="ここで編集して ↑ で本文に反映"></textarea>
       <button id="go" aria-label="本文に反映">↑</button>
     </div></div></div>
   </section>
@@ -212,8 +212,9 @@ $('#hist').onclick=e=>{const b=e.target.closest('.hi');if(!b)return;jump(+b.data
 $('#menu').onclick=()=>app.classList.add('open');
 $('#fname').onclick=()=>{nameMode=true;chip.textContent='ファイル名を編集';ct.value=cur.n;chat.classList.remove('min');ct.focus();ct.select()};
 function renameDoc(){const n=ct.value.replace(/\s+/g,' ').trim();if(!n)return;cur.n=n;$('#fname').textContent=n;render();touch();sync();chip.textContent='名前を変更しました ✓';setTimeout(()=>{if(chip.textContent.startsWith('名前'))sync()},1200)}
+function webSave(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ta.value],{type:'text/plain;charset=utf-8'}));a.download=cur.n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 $('#save').onclick=async e=>{const b=e.currentTarget;if(!ta.value){fl(b,'中身が空です');return}
-  try{const dl=await window.claude.use('downloads');if(!dl)throw{code:'unavailable'};let fn=cur.n;
+  try{const dl=window.claude?await window.claude.use('downloads'):null;if(!dl){webSave();fl(b,'保存しました');return}let fn=cur.n;
     try{await dl.save({filename:fn,data:ta.value})}
     catch(x){if(x&&x.code==='rejected_extension'){fn=cur.n+'.txt';await dl.save({filename:fn,data:ta.value})}else throw x}
     fl(b,fn===cur.n?'保存しました':'.txt を付けて保存')}
